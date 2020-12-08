@@ -1,0 +1,12 @@
+{
+  "name": "nav-enonicxp-frontend-revalidator-proxy",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./src/app.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "node-fetch": "^2.6.1"
+  }
+}

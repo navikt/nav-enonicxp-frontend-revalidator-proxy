@@ -108,6 +108,15 @@ app.get('/shutdown', (req, res) => {
     }
 });
 
+app.get('/internal/isAlive', (req, res) => {
+   return res.status(200).send('Ok!');
+});
+
+app.get('/internal/isReady', (req, res) => {
+    return res.status(200).send('Ok!');
+});
+
+
 const server = app.listen(port, () => {
     console.log(`started revalidator proxy server at http://localhost:${port}`);
 });

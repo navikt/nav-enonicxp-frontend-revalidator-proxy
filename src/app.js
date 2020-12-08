@@ -5,60 +5,9 @@ const app = express();
 const appPort = 3002;
 
 const clientPort = 3000;
-const clientLivenessApi = '/api/internal/isAlive';
-const clientRevalidateApi = '/api/revalidate';
-
-const livenessCheckPeriod = 10000;
-const livenessTimeout = 1000;
-
-const clientList = {};
-
-const fetchWithTimeout = (url) =>
-    Promise.race([
-        fetch(url),
-        new Promise((res) =>
-            setTimeout(
-                () =>
-                    res({
-                        ok: false,
-                        status: 408,
-                        statusText: 'Request Timeout',
-                    }),
-                livenessTimeout
-            )
-        ),
-    ]);
-
-const checkLiveness = async () => {
-    const deadClients = await Object.keys(clientList).reduce(
-        async (deadList, clientAddress) => {
-            const liveness = await fetchWithTimeout(
-                `http://${clientAddress}:${clientPort}${clientLivenessApi}`
-            ).then((res) => res.ok).catch((e) => {
-                console.log(`Error during liveness check for ${clientAddress}: ${e}`);
-                return false;
-            });
-
-            console.log(`${clientAddress} is alive? `, liveness);
-
-            if (!liveness) {
-                return [...(await deadList), clientAddress];
-            }
-
-            return deadList;
-        },
-        []
-    );
-
-    if (deadClients.length > 0) {
-        console.log(
-            `Updating client list at ${Date.now()}. Dead clients to be removed: `,
-            deadClients
-        );
-
-        deadClients.forEach((client) => delete clientList[client]);
-    }
-};
+const clientRevalidateApi = '/api/internal/revalidate';
+const clientStaleTime = 10000;
+const clientsAddressToHeartbeatMap = {};
 
 app.get('/revalidator-proxy', (req, res) => {
     const { path } = req.query;
@@ -67,13 +16,22 @@ app.get('/revalidator-proxy', (req, res) => {
         return;
     }
 
-    Object.keys(clientList).forEach((clientAddress) =>
-        fetch(
-            `http://${clientAddress}:${clientPort}${clientRevalidateApi}?path=${path}`
-        ).catch(() => console.log(`Error while requesting revalidation to ${clientAddress} of ${path}`))
-    );
-
     console.log(`Revalidating ${path}`);
+
+    const staleClients = [];
+    const now = Date.now();
+
+    Object.entries(clientsAddressToHeartbeatMap).forEach(([address, lastHeartbeat]) => {
+        if (now - lastHeartbeat > clientStaleTime) {
+            staleClients.push(address);
+        } else {
+            fetch(
+                `http://${address}:${clientPort}${clientRevalidateApi}?path=${path}`
+            ).catch(() => console.log(`Error while requesting revalidation to ${address} of ${path}`))
+        }
+    });
+
+    staleClients.forEach(item => void delete clientsAddressToHeartbeatMap[item]);
 
     res.status(200).send(`Revalidating ${path}`);
 });
@@ -85,13 +43,11 @@ app.get('/heartbeat', (req, res) => {
         return;
     }
 
-    console.log(`heartbeat from ${address}`);
+    console.log(`Heartbeat from ${address}`);
 
-    if (!clientList[address]) {
-        clientList[address] = true;
-    }
+    clientsAddressToHeartbeatMap[address] = Date.now();
 
-    res.status(200).send(`${address} subscribed`);
+    res.status(200).send(`${address} liveness updated`);
 });
 
 app.get('/shutdown', (req, res) => {
@@ -101,32 +57,28 @@ app.get('/shutdown', (req, res) => {
         return;
     }
 
-    if (clientList[address]) {
-        delete clientList[address];
-        res.status(200).send(`${address} unsubscribed`);
+    if (clientsAddressToHeartbeatMap[address]) {
+        delete clientsAddressToHeartbeatMap[address];
+        res.status(200).send(`${address} removed from client list`);
     } else {
-        res.status(200).send(`${address} not found in subscribers list`);
+        res.status(200).send(`${address} not found in client list`);
     }
 });
 
 app.get('/internal/isAlive', (req, res) => {
-   return res.status(200).send('Ok!');
+    return res.status(200).send('Ok!');
 });
 
 app.get('/internal/isReady', (req, res) => {
     return res.status(200).send('Ok!');
 });
 
-
 const server = app.listen(appPort, () => {
-    console.log(`started revalidator proxy server at http://localhost:${appPort}`);
+    console.log(`Server starting on port ${appPort}`);
 });
 
-const livenessIntervalTimer = setInterval(checkLiveness, livenessCheckPeriod);
-
 const shutdown = () => {
-    console.log('Shutting down');
-    clearInterval(livenessIntervalTimer);
+    console.log('Server shutting down');
 
     server.close(() => {
         console.log('Shutdown complete!');

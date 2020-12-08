@@ -33,13 +33,16 @@ const fetchWithTimeout = (url) =>
 const checkLiveness = async () => {
     const deadClients = await Object.keys(clientList).reduce(
         async (deadList, clientAddress) => {
-            const isAlive = await fetchWithTimeout(
+            const liveness = await fetchWithTimeout(
                 `http://${clientAddress}:${clientPort}${clientLivenessApi}`
-            ).then((res) => res.ok);
+            ).then((res) => res.ok).catch((e) => {
+                console.log(`Error during liveness check for ${clientAddress}: ${e}`);
+                return false;
+            });
 
-            console.log(`${clientAddress} is alive? `, isAlive);
+            console.log(`${clientAddress} is alive? `, liveness);
 
-            if (!isAlive) {
+            if (!liveness) {
                 return [...(await deadList), clientAddress];
             }
 

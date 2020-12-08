@@ -72,7 +72,7 @@ app.get('/revalidator-proxy', (req, res) => {
         fetch(
             `http://${clientAddress}:${clientPort}${clientRevalidateApi}?path=${path}`,
             { headers: { secret } }
-        )
+        ).catch(() => console.log(`Error while requesting revalidation to ${clientAddress} of ${path}`))
     );
 
     console.log(`Revalidating ${path}`);

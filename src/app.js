@@ -23,6 +23,7 @@ app.get('/revalidator-proxy', (req, res) => {
 
     Object.entries(clientsAddressToHeartbeatMap).forEach(([address, lastHeartbeat]) => {
         if (now - lastHeartbeat > clientStaleTime) {
+            console.log(`stale client: ${address}`);
             staleClients.push(address);
         } else {
             fetch(

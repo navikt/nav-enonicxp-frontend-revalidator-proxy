@@ -48,12 +48,14 @@ const checkLiveness = async () => {
         []
     );
 
-    // console.log(
-    //     `Updating client list at ${Date.now()}. Dead clients to be removed: `,
-    //     deadClients
-    // );
+    if (deadClients.length > 0) {
+        console.log(
+            `Updating client list at ${Date.now()}. Dead clients to be removed: `,
+            deadClients
+        );
 
-    deadClients.forEach((client) => delete clientList[client]);
+        deadClients.forEach((client) => delete clientList[client]);
+    }
 };
 
 app.get('/revalidator-proxy', (req, res) => {

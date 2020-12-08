@@ -2,17 +2,16 @@ const express = require('express');
 const fetch = require('node-fetch');
 
 const app = express();
-const port = 3002;
+const appPort = 3002;
+
 const clientPort = 3000;
 const clientLivenessApi = '/api/internal/isAlive';
 const clientRevalidateApi = '/api/revalidate';
 
-const livenessCheckPeriod = 5000;
+const livenessCheckPeriod = 10000;
 const livenessTimeout = 1000;
 
 const clientList = {};
-
-const secret = process.env.SERVICE_SECRET;
 
 const fetchWithTimeout = (url) =>
     Promise.race([
@@ -70,8 +69,7 @@ app.get('/revalidator-proxy', (req, res) => {
 
     Object.keys(clientList).forEach((clientAddress) =>
         fetch(
-            `http://${clientAddress}:${clientPort}${clientRevalidateApi}?path=${path}`,
-            { headers: { secret } }
+            `http://${clientAddress}:${clientPort}${clientRevalidateApi}?path=${path}`
         ).catch(() => console.log(`Error while requesting revalidation to ${clientAddress} of ${path}`))
     );
 
@@ -120,8 +118,8 @@ app.get('/internal/isReady', (req, res) => {
 });
 
 
-const server = app.listen(port, () => {
-    console.log(`started revalidator proxy server at http://localhost:${port}`);
+const server = app.listen(appPort, () => {
+    console.log(`started revalidator proxy server at http://localhost:${appPort}`);
 });
 
 const livenessIntervalTimer = setInterval(checkLiveness, livenessCheckPeriod);

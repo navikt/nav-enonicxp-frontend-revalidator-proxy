@@ -8,11 +8,8 @@ WORKDIR /usr/src/app
 COPY package*.json /usr/src/app/
 RUN npm ci
 
-# Copying build files from workflow
-COPY public /usr/src/app/public/
-COPY .next /usr/src/app/.next/
-COPY [".env", "next.config.js", "heartbeat.js", "/usr/src/app/"]
+COPY src /usr/src/app/src/
 
 # Start app
-EXPOSE 3000
+EXPOSE 3002
 CMD ["npm", "run", "start"]

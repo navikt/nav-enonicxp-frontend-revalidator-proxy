@@ -1,1 +1,1 @@
-Proxy som sender revalideringskall til alle podder for nav-enonicxp-frontend
+App som sender revalideringskall fra Enonic XP til alle podder for nav-enonicxp-frontend

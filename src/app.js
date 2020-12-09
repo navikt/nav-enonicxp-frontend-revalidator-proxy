@@ -9,7 +9,15 @@ const clientRevalidateApi = '/api/internal/revalidate-cache';
 const clientStaleTime = 10000;
 const clientsAddressHeartbeat = {};
 
+const { SERVICE_SECRET } = process.env;
+
 app.get('/revalidator-proxy', (req, res) => {
+    const { secret } = req.headers;
+    if (secret !== SERVICE_SECRET) {
+        res.status(401).send('Not authorized');
+        return;
+    }
+
     const { path } = req.query;
     if (!path) {
         res.status(400).send('No path provided');
@@ -25,7 +33,7 @@ app.get('/revalidator-proxy', (req, res) => {
         } else {
             fetch(
                 `http://${address}:${clientPort}${clientRevalidateApi}?path=${path}`
-            ).catch(() => console.log(`Error while requesting revalidation to ${address} of ${path}`))
+            ).catch(() => console.error(`Error while requesting revalidation to ${address} of ${path}`))
         }
     });
 
@@ -33,6 +41,12 @@ app.get('/revalidator-proxy', (req, res) => {
 });
 
 app.get('/liveness', (req, res) => {
+    const { secret } = req.headers;
+    if (secret !== SERVICE_SECRET) {
+        res.status(401).send('Not authorized');
+        return;
+    }
+
     const { address } = req.query;
     if (!address) {
         res.status(400).send('No address provided');

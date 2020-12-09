@@ -48,22 +48,6 @@ app.get('/liveness', (req, res) => {
     res.status(200).send(`${address} liveness updated`);
 });
 
-app.get('/shutdown', (req, res) => {
-    const { address } = req.query;
-    if (!address) {
-        res.status(400).send('No address provided');
-        return;
-    }
-
-    if (clientsAddressHeartbeat[address]) {
-        console.log(`Received shutdown signal from client: ${address}`);
-        delete clientsAddressHeartbeat[address];
-        res.status(200).send(`${address} removed from client list`);
-    } else {
-        res.status(200).send(`${address} not found in client list`);
-    }
-});
-
 app.get('/internal/isAlive', (req, res) => {
     return res.status(200).send('Ok!');
 });

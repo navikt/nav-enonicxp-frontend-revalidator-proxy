@@ -50,7 +50,6 @@ app.get('/revalidator-proxy', (req, res) => {
 app.get('/liveness', (req, res) => {
     const { secret } = req.headers;
     if (secret !== SERVICE_SECRET) {
-        console.log("liveness request denied");
         // res.status(401).send('Not authorized');
         // return;
     }

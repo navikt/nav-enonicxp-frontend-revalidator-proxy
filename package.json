@@ -1,6 +1,6 @@
 {
   "name": "nav-enonicxp-frontend-revalidator-proxy",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "private": true,
   "scripts": {
     "start": "node ./src/app.js"

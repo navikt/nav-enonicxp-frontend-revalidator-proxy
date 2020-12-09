@@ -26,7 +26,7 @@ spec:
   vault:
     enabled: true
     paths:
-      kvPath: /kv/preprod/sbs/nav-enonicxp-frontend/{{namespace}}
+      - kvPath: /kv/preprod/sbs/nav-enonicxp-frontend/{{namespace}}
   replicas:
     min: 1
     max: 1

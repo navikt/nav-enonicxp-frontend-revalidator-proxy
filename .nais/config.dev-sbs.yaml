@@ -26,7 +26,7 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: /kv/preprod/sbs/nav-enonicxp-frontend/{{namespace}}
+      - kvPath: /kv/preprod/sbs/nav-enonicxp-frontend/q6
         mountPath: /var/run/secrets/nais.io/vault
   replicas:
     min: 1

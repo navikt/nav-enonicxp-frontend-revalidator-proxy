@@ -36,8 +36,11 @@ app.get('/revalidator-proxy', (req, res) => {
             delete clientsAddressHeartbeat[address];
         } else {
             fetch(
-                `http://${address}:${clientPort}${clientRevalidateApi}?path=${path}`
-            ).catch(() => console.error(`Error while requesting revalidation to ${address} of ${path}`))
+                `http://${address}:${clientPort}${clientRevalidateApi}?path=${path}`,
+                { headers: { secret } }
+            ).catch(
+                (e) => console.error(`Error requesting revalidation to ${address} of ${path} - ${e}`)
+            )
         }
     });
 

@@ -18,8 +18,8 @@ app.get('/revalidator-proxy', (req, res) => {
     const { secret } = req.headers;
     if (secret !== SERVICE_SECRET) {
         console.log("proxy request denied");
-        res.status(401).send('Not authorized');
-        return;
+        // res.status(401).send('Not authorized');
+        // return;
     }
 
     const { path } = req.query;
@@ -51,8 +51,8 @@ app.get('/liveness', (req, res) => {
     const { secret } = req.headers;
     if (secret !== SERVICE_SECRET) {
         console.log("liveness request denied");
-        res.status(401).send('Not authorized');
-        return;
+        // res.status(401).send('Not authorized');
+        // return;
     }
 
     const { address } = req.query;

@@ -1,7 +1,5 @@
 FROM navikt/node-express:14-alpine
 
-RUN apk --no-cache add curl
-
 # Create app directory
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
@@ -10,6 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json /usr/src/app/
 RUN npm ci
 
+# Copy app source
 COPY src /usr/src/app/src/
 
 # Start app

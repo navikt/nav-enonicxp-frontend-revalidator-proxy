@@ -20,6 +20,9 @@ spec:
   {{#each ingresses as |url|}}
     - {{url}}
   {{/each}}
+  prometheus:
+    enabled: true
+    path: /metrics
   replicas:
     min: 1
     max: 1

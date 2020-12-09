@@ -5,9 +5,9 @@ const app = express();
 const appPort = 3002;
 
 const clientPort = 3000;
-const clientRevalidateApi = '/api/internal/revalidate';
+const clientRevalidateApi = '/api/internal/revalidate-cache';
 const clientStaleTime = 10000;
-const clientsAddressToHeartbeatMap = {};
+const clientsAddressHeartbeat = {};
 
 app.get('/revalidator-proxy', (req, res) => {
     const { path } = req.query;
@@ -18,13 +18,10 @@ app.get('/revalidator-proxy', (req, res) => {
 
     console.log(`Revalidating ${path}`);
 
-    const staleClients = [];
-    const now = Date.now();
-
-    Object.entries(clientsAddressToHeartbeatMap).forEach(([address, lastHeartbeat]) => {
-        if (now - lastHeartbeat > clientStaleTime) {
-            console.log(`stale client: ${address}`);
-            staleClients.push(address);
+    Object.entries(clientsAddressHeartbeat).forEach(([address, lastHeartbeat]) => {
+        if (Date.now() - lastHeartbeat > clientStaleTime) {
+            console.log(`Removing stale client: ${address}`);
+            delete clientsAddressHeartbeat[address];
         } else {
             fetch(
                 `http://${address}:${clientPort}${clientRevalidateApi}?path=${path}`
@@ -32,21 +29,21 @@ app.get('/revalidator-proxy', (req, res) => {
         }
     });
 
-    staleClients.forEach(item => void delete clientsAddressToHeartbeatMap[item]);
-
     res.status(200).send(`Revalidating ${path}`);
 });
 
-app.get('/heartbeat', (req, res) => {
+app.get('/liveness', (req, res) => {
     const { address } = req.query;
     if (!address) {
         res.status(400).send('No address provided');
         return;
     }
 
-    console.log(`Heartbeat from ${address}`);
+    if (!clientsAddressHeartbeat[address]) {
+        console.log(`New client: ${address}`);
+    }
 
-    clientsAddressToHeartbeatMap[address] = Date.now();
+    clientsAddressHeartbeat[address] = Date.now();
 
     res.status(200).send(`${address} liveness updated`);
 });
@@ -58,8 +55,9 @@ app.get('/shutdown', (req, res) => {
         return;
     }
 
-    if (clientsAddressToHeartbeatMap[address]) {
-        delete clientsAddressToHeartbeatMap[address];
+    if (clientsAddressHeartbeat[address]) {
+        console.log(`Received shutdown signal from client: ${address}`);
+        delete clientsAddressHeartbeat[address];
         res.status(200).send(`${address} removed from client list`);
     } else {
         res.status(200).send(`${address} not found in client list`);

@@ -23,8 +23,6 @@ spec:
   prometheus:
     enabled: true
     path: /metrics
-  vault:
-    enabled: true
   replicas:
     min: 1
     max: 1

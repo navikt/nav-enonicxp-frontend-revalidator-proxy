@@ -20,16 +20,12 @@ app.get('/revalidator-proxy', (req, res) => {
 
     if (secret !== SERVICE_SECRET) {
         console.log(`Proxy request denied for ${path} (401)`);
-        res.status(401).send('Not authorized');
-        return;
+        return res.status(401).send('Not authorized');
     }
 
     if (!path) {
-        res.status(400).send('No path provided');
-        return;
+        return res.status(400).send('No path provided');
     }
-
-    console.log(`Revalidating ${path}`);
 
     Object.entries(clientsAddressHeartbeat).forEach(([address, lastHeartbeat]) => {
         if (Date.now() - lastHeartbeat > clientStaleTime) {
@@ -40,12 +36,14 @@ app.get('/revalidator-proxy', (req, res) => {
                 `http://${address}:${clientPort}${clientRevalidateApi}?path=${path}`,
                 { headers: { secret } }
             ).catch(
-                (e) => console.error(`Error requesting revalidation to ${address} of ${path} - ${e}`)
+                (e) => console.error(`Error while requesting revalidation to ${address} of ${path} - ${e}`)
             )
         }
     });
 
-    res.status(200).send(`Revalidating ${path}`);
+    const msg = `Revalidating ${path}`
+    console.log(msg);
+    res.status(200).send(msg);
 });
 
 app.get('/liveness', (req, res) => {
@@ -54,13 +52,11 @@ app.get('/liveness', (req, res) => {
 
     if (secret !== SERVICE_SECRET) {
         console.log(`Liveness request denied for ${address} (401)`);
-        res.status(401).send('Not authorized');
-        return;
+        return res.status(401).send('Not authorized');
     }
 
     if (!address) {
-        res.status(400).send('No address provided');
-        return;
+        return res.status(400).send('No address provided');
     }
 
     if (!clientsAddressHeartbeat[address]) {

@@ -4,6 +4,7 @@ on:
     tags:
       - "v*"
       - "!v*-q6"
+      - "!v*-prod"
 jobs:
   deploy:
     runs-on: ubuntu-latest

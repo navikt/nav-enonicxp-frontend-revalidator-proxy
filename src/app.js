@@ -17,9 +17,10 @@ const { SERVICE_SECRET } = process.env;
 app.get('/revalidator-proxy', (req, res) => {
     const { secret } = req.headers;
     const { path } = req.query;
+    const encodedPath = encodeURI(path);
 
     if (secret !== SERVICE_SECRET) {
-        console.log(`Proxy request denied for ${path} (401)`);
+        console.log(`Proxy request denied for ${encodedPath} (401)`);
         return res.status(401).send('Not authorized');
     }
 
@@ -32,16 +33,17 @@ app.get('/revalidator-proxy', (req, res) => {
             console.log(`Removing stale client: ${address}`);
             delete clientsAddressHeartbeat[address];
         } else {
-            fetch(
-                `http://${address}:${clientPort}${clientRevalidateApi}?path=${path}`,
-                { headers: { secret } }
-            ).catch(
-                (e) => console.error(`Error while requesting revalidation to ${address} of ${path} - ${e}`)
-            )
+            fetch(`http://${address}:${clientPort}${clientRevalidateApi}?path=${encodedPath}`, {
+                headers: { secret },
+            }).catch((e) =>
+                console.error(
+                    `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`
+                )
+            );
         }
     });
 
-    const msg = `Revalidating ${path}`
+    const msg = `Revalidating ${encodedPath}`;
     console.log(msg);
     res.status(200).send(msg);
 });

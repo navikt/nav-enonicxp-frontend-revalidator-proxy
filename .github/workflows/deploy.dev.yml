@@ -1,11 +1,11 @@
-name: Deploy-to-q1
+name: Deploy-to-dev
 on:
   push:
     tags:
       - "v*"
       - "!v*-q6"
       - "!v*-prod"
-      - "!v*-dev"
+      - "!v*-q1"
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -35,9 +35,9 @@ jobs:
       - name: Generate nais variables
         run: |
           cat > .nais/vars.yaml <<EOF
-          namespace: q1
+          namespace: personbruker
           ingresses:
-            - https://nav-enonicxp-frontend-revalidator-proxy-q1.dev.nav.no
+            - https://nav-enonicxp-frontend-revalidator-proxy.dev.nav.no
           image: $IMAGE_REGISTRY/$IMAGE_NAME
           version: $IMAGE_VERSION
           EOF

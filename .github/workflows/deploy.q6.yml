@@ -5,6 +5,7 @@ on:
       - "v*"
       - "!v*-q1"
       - "!v*-prod"
+      - "!v*-dev"
 jobs:
   deploy:
     runs-on: ubuntu-latest

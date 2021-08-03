@@ -3,9 +3,7 @@ on:
   push:
     tags:
       - "v*"
-      - "!v*-q6"
       - "!v*-prod"
-      - "!v*-q1"
 jobs:
   deploy:
     runs-on: ubuntu-latest

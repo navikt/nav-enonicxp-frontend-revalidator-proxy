@@ -1,6 +1,6 @@
 {
   "name": "nav-enonicxp-frontend-revalidator-proxy",
-  "version": "1.0.2-dev",
+  "version": "1.0.4-dev",
   "private": true,
   "scripts": {
     "start": "node ./src/app.js"
@@ -8,6 +8,6 @@
   "dependencies": {
     "express": "^4.17.1",
     "node-fetch": "^2.6.1",
-    "dotenv": "^8.2.0"
+    "dotenv": "^10.0.0"
   }
 }

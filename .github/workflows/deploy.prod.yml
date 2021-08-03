@@ -32,7 +32,7 @@ jobs:
       - name: Generate nais variables
         run: |
           cat > .nais/vars.yaml <<EOF
-          namespace: default
+          namespace: personbruker
           ingresses:
             - https://nav-enonicxp-frontend-revalidator-proxy.nais.oera.no
           image: $IMAGE_REGISTRY/$IMAGE_NAME

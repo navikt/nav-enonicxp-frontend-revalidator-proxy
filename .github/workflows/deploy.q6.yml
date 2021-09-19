@@ -1,12 +1,11 @@
 name: Deploy-to-q6
 on:
-  push:
-    tags:
-      - "v*"
-      - "!v*-prod"
+  workflow_dispatch
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: dev-sbs:q6
     steps:
       - uses: actions/checkout@v1
       - name: Define build environment

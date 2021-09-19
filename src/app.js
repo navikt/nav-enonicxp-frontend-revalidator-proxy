@@ -8,12 +8,11 @@ const app = express();
 const appPort = 3002;
 
 const clientPort = 3000;
+const clientRevalidateApi = '/api/internal/revalidate-cache';
 const clientStaleTime = 10000;
 const clientsAddressHeartbeat = {};
 
 const { SERVICE_SECRET } = process.env;
-
-const options = { headers: { secret: SERVICE_SECRET, invalidate: true } }
 
 app.get('/revalidator-proxy', (req, res) => {
     const { secret } = req.headers;
@@ -34,7 +33,9 @@ app.get('/revalidator-proxy', (req, res) => {
             console.log(`Removing stale client: ${address}`);
             delete clientsAddressHeartbeat[address];
         } else {
-            fetch(`http://${address}:${clientPort}${encodedPath}`, options).catch((e) =>
+            fetch(`http://${address}:${clientPort}${clientRevalidateApi}?path=${encodedPath}`, {
+                headers: { secret },
+            }).catch((e) =>
                 console.error(
                     `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`
                 )
@@ -42,7 +43,7 @@ app.get('/revalidator-proxy', (req, res) => {
         }
     });
 
-    const msg = `Sent invalidation request of ${encodedPath}`;
+    const msg = `Revalidating ${encodedPath}`;
     console.log(msg);
     res.status(200).send(msg);
 });

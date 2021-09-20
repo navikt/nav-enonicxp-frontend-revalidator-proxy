@@ -1,12 +1,11 @@
-name: Deploy-to-q6
+name: Deploy-to-dev-gcp
 on:
-  push:
-    tags:
-      - "v*"
-      - "!v*-prod"
+  workflow_dispatch
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: dev-gcp:personbruker
     steps:
       - uses: actions/checkout@v1
       - name: Define build environment
@@ -18,7 +17,7 @@ jobs:
           echo "IMAGE_NAME=$(echo ${GITHUB_REPOSITORY##*/})" >> $GITHUB_ENV
           echo "IMAGE_VERSION=$(echo ${GITHUB_WORKFLOW})-$(echo ${GITHUB_SHA})" >> $GITHUB_ENV
           echo "GITHUB_TOKEN=$(echo ${GITHUB_TOKEN})" >> $GITHUB_ENV
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -33,15 +32,15 @@ jobs:
       - name: Generate nais variables
         run: |
           cat > .nais/vars.yaml <<EOF
-          namespace: q6
+          namespace: personbruker
           ingresses:
-            - https://nav-enonicxp-frontend-revalidator-proxy-q6.dev.nav.no
+            - https://nav-enonicxp-frontend-revalidator-proxy-gcp.dev.nav.no
           image: $IMAGE_REGISTRY/$IMAGE_NAME
           version: $IMAGE_VERSION
           EOF
       - uses: nais/deploy/actions/deploy@master
         env:
-          CLUSTER: dev-sbs
+          CLUSTER: dev-gcp
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           RESOURCE: .nais/config.yaml
           VARS: .nais/vars.yaml

@@ -14,6 +14,8 @@ const clientsAddressHeartbeat = {};
 
 const { SERVICE_SECRET } = process.env;
 
+console.log(`secret: ${SERVICE_SECRET?.substr(0, 5)}`);
+
 app.get('/revalidator-proxy', (req, res) => {
     const { secret } = req.headers;
     const { path } = req.query;

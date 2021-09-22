@@ -86,6 +86,9 @@ const shutdown = () => {
     console.log('Server shutting down');
 
     server.close(() => {
+        if (!SERVICE_SECRET) {
+            throw new Error('Authentication key is not defined - shutting down');
+        }
         console.log('Shutdown complete!');
         process.exit(0);
     });

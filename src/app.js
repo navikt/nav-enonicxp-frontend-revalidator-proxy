@@ -1,8 +1,8 @@
 const express = require('express');
 const fetch = require('node-fetch');
-const dotenv = require('dotenv');
-
-dotenv.config();
+// const dotenv = require('dotenv');
+//
+// dotenv.config();
 
 const app = express();
 const appPort = 3002;
@@ -80,7 +80,9 @@ app.get('/internal/isReady', (req, res) => {
 
 const server = app.listen(appPort, () => {
     if (!SERVICE_SECRET) {
-        throw new Error('Authentication key is not defined - shutting down');
+        const msg = 'Authentication key is not defined - shutting down';
+        console.error(msg);
+        throw new Error(msg);
     }
     console.log(`Server starting on port ${appPort}`);
 });

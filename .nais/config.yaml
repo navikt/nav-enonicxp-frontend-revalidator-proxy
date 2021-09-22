@@ -20,9 +20,6 @@ spec:
   {{#each ingresses as |url|}}
     - {{url}}
   {{/each}}
-  prometheus:
-    enabled: true
-    path: /metrics
   vault:
     enabled: true
   replicas:

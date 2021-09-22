@@ -10,6 +10,7 @@ RUN npm ci
 
 # Copy app source
 COPY src /usr/src/app/src/
+COPY .env /usr/src/app/src/
 
 # Start app
 EXPOSE 3002

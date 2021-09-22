@@ -1,11 +1,11 @@
-name: Deploy-to-dev
+name: Deploy-to-dev-gcp
 on:
   workflow_dispatch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: dev-sbs:personbruker
+    environment: dev-gcp:personbruker
     steps:
       - uses: actions/checkout@v1
       - name: Define build environment
@@ -41,13 +41,13 @@ jobs:
           cat > .nais/vars.yaml <<EOF
           namespace: personbruker
           ingresses:
-            - https://nav-enonicxp-frontend-revalidator-proxy.dev.nav.no
+            - https://nav-enonicxp-frontend-revalidator-proxy-gcp.dev.nav.no
           image: $IMAGE_REGISTRY/$IMAGE_NAME
           version: $IMAGE_VERSION
           EOF
       - uses: nais/deploy/actions/deploy@master
         env:
-          CLUSTER: dev-sbs
+          CLUSTER: dev-gcp
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           RESOURCE: .nais/config.yaml
           VARS: .nais/vars.yaml

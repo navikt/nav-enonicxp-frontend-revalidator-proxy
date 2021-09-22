@@ -78,6 +78,11 @@ app.get('/internal/isReady', (req, res) => {
 });
 
 const server = app.listen(appPort, () => {
+    if (!SERVICE_SECRET) {
+        const msg = 'Authentication key is not defined - shutting down';
+        console.error(msg);
+        throw new Error(msg);
+    }
     console.log(`Server starting on port ${appPort}`);
 });
 

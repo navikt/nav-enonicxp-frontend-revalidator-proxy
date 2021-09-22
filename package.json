@@ -3,11 +3,11 @@
   "version": "1.0.4-prod",
   "private": true,
   "scripts": {
-    "start": "node ./src/app.js"
+    "start": "node ./src/app.js",
+    "start-local": "set SERVICE_SECRET=dummyToken && npm start"
   },
   "dependencies": {
     "express": "^4.17.1",
-    "node-fetch": "^2.6.1",
-    "dotenv": "^10.0.0"
+    "node-fetch": "^2.6.1"
   }
 }

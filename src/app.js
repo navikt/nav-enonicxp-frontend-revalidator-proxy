@@ -1,8 +1,5 @@
 const express = require('express');
 const fetch = require('node-fetch');
-// const dotenv = require('dotenv');
-//
-// dotenv.config();
 
 const app = express();
 const appPort = 3002;

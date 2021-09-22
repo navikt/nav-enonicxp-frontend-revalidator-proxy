@@ -24,7 +24,7 @@ jobs:
           cat > .env <<EOF
           SERVICE_SECRET=$SERVICE_SECRET
           EOF
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}

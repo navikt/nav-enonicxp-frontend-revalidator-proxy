@@ -79,6 +79,9 @@ app.get('/internal/isReady', (req, res) => {
 });
 
 const server = app.listen(appPort, () => {
+    if (!SERVICE_SECRET) {
+        throw new Error('Authentication key is not defined - shutting down');
+    }
     console.log(`Server starting on port ${appPort}`);
 });
 
@@ -86,9 +89,6 @@ const shutdown = () => {
     console.log('Server shutting down');
 
     server.close(() => {
-        if (!SERVICE_SECRET) {
-            throw new Error('Authentication key is not defined - shutting down');
-        }
         console.log('Shutdown complete!');
         process.exit(0);
     });

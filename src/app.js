@@ -21,7 +21,7 @@ app.get('/revalidator-proxy', (req, res) => {
     const encodedPath = encodeURI(path);
 
     if (secret !== SERVICE_SECRET) {
-        console.log(`Proxy request denied for ${encodedPath} (401)`);
+        console.error(`Proxy request denied for ${encodedPath} (401)`);
         return res.status(401).send('Not authorized');
     }
 

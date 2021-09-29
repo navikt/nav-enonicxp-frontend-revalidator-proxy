@@ -15,7 +15,7 @@ const { SERVICE_SECRET } = process.env;
 
 const options = { headers: { secret: SERVICE_SECRET } };
 
-const callLiveClients = (callback) => {
+const callClients = (callback) => {
     Object.entries(clientsAddressHeartbeat).forEach(([address, lastHeartbeat]) => {
         if (Date.now() - lastHeartbeat < clientStaleTime) {
             callback(address);
@@ -40,7 +40,7 @@ app.get('/revalidator-proxy', (req, res) => {
         return res.status(400).send('Path-parameter must be provided');
     }
 
-    callLiveClients((address) => fetch(`http://${address}:${clientPort}${encodedPath}?invalidate=true`, options).catch((e) =>
+    callClients((address) => fetch(`http://${address}:${clientPort}${encodedPath}?invalidate=true`, options).catch((e) =>
         console.error(
             `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`,
         ),
@@ -59,7 +59,7 @@ app.get('/revalidator-proxy/wipe-all', (req, res) => {
         return res.status(401).send('Not authorized');
     }
 
-    callLiveClients((address) => fetch(`http://${address}:${clientPort}?wipeAll=true`, options).catch((e) =>
+    callClients((address) => fetch(`http://${address}:${clientPort}?wipeAll=true`, options).catch((e) =>
         console.error(
             `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`,
         ),

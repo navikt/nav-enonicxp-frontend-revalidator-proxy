@@ -8,11 +8,23 @@ const app = express();
 const appPort = 3002;
 
 const clientPort = 3000;
-const clientRevalidateApi = '/api/internal/revalidate-cache';
 const clientStaleTime = 10000;
 const clientsAddressHeartbeat = {};
 
 const { SERVICE_SECRET } = process.env;
+
+const options = { headers: { secret: SERVICE_SECRET } };
+
+const callClients = (callback) => {
+    Object.entries(clientsAddressHeartbeat).forEach(([address, lastHeartbeat]) => {
+        if (Date.now() - lastHeartbeat < clientStaleTime) {
+            callback(address);
+        } else {
+            console.log(`Removing stale client: ${address}`);
+            delete clientsAddressHeartbeat[address];
+        }
+    });
+};
 
 app.get('/revalidator-proxy', (req, res) => {
     const { secret } = req.headers;
@@ -20,30 +32,40 @@ app.get('/revalidator-proxy', (req, res) => {
     const encodedPath = encodeURI(path);
 
     if (secret !== SERVICE_SECRET) {
-        console.log(`Proxy request denied for ${encodedPath} (401)`);
+        console.error(`Proxy request denied for ${encodedPath} (401)`);
         return res.status(401).send('Not authorized');
     }
 
     if (!path) {
-        return res.status(400).send('No path provided');
+        return res.status(400).send('Path-parameter must be provided');
     }
 
-    Object.entries(clientsAddressHeartbeat).forEach(([address, lastHeartbeat]) => {
-        if (Date.now() - lastHeartbeat > clientStaleTime) {
-            console.log(`Removing stale client: ${address}`);
-            delete clientsAddressHeartbeat[address];
-        } else {
-            fetch(`http://${address}:${clientPort}${clientRevalidateApi}?path=${encodedPath}`, {
-                headers: { secret },
-            }).catch((e) =>
-                console.error(
-                    `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`
-                )
-            );
-        }
-    });
+    callClients((address) => fetch(`http://${address}:${clientPort}${encodedPath}?invalidate=true`, options).catch((e) =>
+        console.error(
+            `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`,
+        ),
+    ));
 
-    const msg = `Revalidating ${encodedPath}`;
+    const msg = `Sent invalidation request for ${encodedPath} to all clients`;
+    console.log(msg);
+    res.status(200).send(msg);
+});
+
+app.get('/revalidator-proxy/wipe-all', (req, res) => {
+    const { secret } = req.headers;
+
+    if (secret !== SERVICE_SECRET) {
+        console.error(`Proxy request denied for wipe-all (401)`);
+        return res.status(401).send('Not authorized');
+    }
+
+    callClients((address) => fetch(`http://${address}:${clientPort}?wipeAll=true`, options).catch((e) =>
+        console.error(
+            `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`,
+        ),
+    ));
+
+    const msg = 'Sent wipe-all request to all clients';
     console.log(msg);
     res.status(200).send(msg);
 });

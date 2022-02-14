@@ -30,7 +30,7 @@ const recentEvents = {
 
             return false;
         } else if (!this.eventStatus[eventId][path]) {
-            this.eventStatus[path] = true;
+            this.eventStatus[eventId][path] = true;
             return false;
         }
 
@@ -75,6 +75,7 @@ app.get('/revalidator-proxy', (req, res) => {
     );
 
     if (eventWasProcessedForPath) {
+        console.log(`This event has already been processsed for ${path}`);
         return res
             .status(200)
             .send(`This event has already been processsed for ${path}`);

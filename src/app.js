@@ -15,6 +15,10 @@ const recentEvents = {
     eventTimeout: 10000,
     eventStatus: {},
     updateEventStatus: function (path, eventId) {
+        if (!eventId) {
+            return false;
+        }
+
         if (!this.eventStatus[eventId]) {
             this.eventStatus[eventId] = {
                 [path]: true,

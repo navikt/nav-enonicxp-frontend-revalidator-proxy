@@ -20,7 +20,8 @@ const options = { headers: { secret: SERVICE_SECRET } };
 // servers per event.
 //
 // This object keeps track of which requests per event that have already been proxied to the frontend, and prevents
-// duplicate calls for the same path under the same event.
+// duplicate calls for the same path under the same event. We remove the entries after the specified timeout to prevent
+// the list from growing large. Generally, all requests for an event are sent in less than a second.
 const recentEvents = {
     eventTimeout: 10000,
     eventStatus: {},

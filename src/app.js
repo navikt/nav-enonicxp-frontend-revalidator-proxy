@@ -11,24 +11,49 @@ const clientPort = 3000;
 const clientStaleTime = 10000;
 const clientsAddressHeartbeat = {};
 
+const recentEvents = {
+    eventTimeout: 10000,
+    eventStatus: {},
+    updateEventStatus: function (path, eventId) {
+        if (!this.eventStatus[eventId]) {
+            this.eventStatus[eventId] = {
+                [path]: true,
+            };
+            setTimeout(() => {
+                delete this.eventStatus[eventId];
+                console.log(`Removed entry for event ${eventId}`);
+            }, this.eventTimeout);
+
+            return false;
+        } else if (!this.eventStatus[eventId][path]) {
+            this.eventStatus[path] = true;
+            return false;
+        }
+
+        return true;
+    },
+};
+
 const { SERVICE_SECRET } = process.env;
 
 const options = { headers: { secret: SERVICE_SECRET } };
 
 const callClients = (callback) => {
-    Object.entries(clientsAddressHeartbeat).forEach(([address, lastHeartbeat]) => {
-        if (Date.now() - lastHeartbeat < clientStaleTime) {
-            callback(address);
-        } else {
-            console.log(`Removing stale client: ${address}`);
-            delete clientsAddressHeartbeat[address];
+    Object.entries(clientsAddressHeartbeat).forEach(
+        ([address, lastHeartbeat]) => {
+            if (Date.now() - lastHeartbeat < clientStaleTime) {
+                callback(address);
+            } else {
+                console.log(`Removing stale client: ${address}`);
+                delete clientsAddressHeartbeat[address];
+            }
         }
-    });
+    );
 };
 
 app.get('/revalidator-proxy', (req, res) => {
     const { secret } = req.headers;
-    const { path } = req.query;
+    const { path, eventId } = req.query;
     const encodedPath = encodeURI(path);
 
     if (secret !== SERVICE_SECRET) {
@@ -40,13 +65,29 @@ app.get('/revalidator-proxy', (req, res) => {
         return res.status(400).send('Path-parameter must be provided');
     }
 
-    callClients((address) => fetch(`http://${address}:${clientPort}${encodedPath}?invalidate=true`, options).catch((e) =>
-        console.error(
-            `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`,
-        ),
-    ));
+    const eventWasProcessedForPath = recentEvents.updateEventStatus(
+        path,
+        eventId
+    );
 
-    const msg = `Sent invalidation request for ${encodedPath} to all clients`;
+    if (eventWasProcessedForPath) {
+        return res
+            .status(200)
+            .send(`This event has already been processsed for ${path}`);
+    }
+
+    callClients((address) =>
+        fetch(
+            `http://${address}:${clientPort}${encodedPath}?invalidate=true`,
+            options
+        ).catch((e) =>
+            console.error(
+                `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`
+            )
+        )
+    );
+
+    const msg = `Sent invalidation request for ${encodedPath} with eventId ${eventId} to all clients`;
     console.log(msg);
     res.status(200).send(msg);
 });
@@ -59,11 +100,14 @@ app.get('/revalidator-proxy/wipe-all', (req, res) => {
         return res.status(401).send('Not authorized');
     }
 
-    callClients((address) => fetch(`http://${address}:${clientPort}?wipeAll=true`, options).catch((e) =>
-        console.error(
-            `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`,
-        ),
-    ));
+    callClients((address) =>
+        fetch(`http://${address}:${clientPort}?wipeAll=true`, options).catch(
+            (e) =>
+                console.error(
+                    `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`
+                )
+        )
+    );
 
     const msg = 'Sent wipe-all request to all clients';
     console.log(msg);

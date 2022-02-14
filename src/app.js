@@ -11,6 +11,16 @@ const clientPort = 3000;
 const clientStaleTime = 10000;
 const clientsAddressHeartbeat = {};
 
+const { SERVICE_SECRET } = process.env;
+
+const options = { headers: { secret: SERVICE_SECRET } };
+
+// Revalidate requests from Enonic XP are sent independently by every node in the server cluster.
+// Each request has an associated eventId, which corresponds to a publishing event. This id is identical across all
+// servers per event.
+//
+// This object keeps track of which requests per event that have already been proxied to the frontend, and prevents
+// duplicate calls for the same path under the same event.
 const recentEvents = {
     eventTimeout: 10000,
     eventStatus: {},
@@ -37,10 +47,6 @@ const recentEvents = {
         return true;
     },
 };
-
-const { SERVICE_SECRET } = process.env;
-
-const options = { headers: { secret: SERVICE_SECRET } };
 
 const callClients = (callback) => {
     Object.entries(clientsAddressHeartbeat).forEach(
@@ -75,7 +81,6 @@ app.get('/revalidator-proxy', (req, res) => {
     );
 
     if (eventWasProcessedForPath) {
-        console.log(`This event has already been processsed for ${path}`);
         return res
             .status(200)
             .send(`This event has already been processsed for ${path}`);

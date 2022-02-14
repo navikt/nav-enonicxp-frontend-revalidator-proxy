@@ -30,12 +30,17 @@ const recentEvents = {
         }
 
         if (!this.eventStatus[eventId]) {
+            console.log(`Adding entry for event ${eventId}`);
             this.eventStatus[eventId] = {
                 [path]: true,
             };
             setTimeout(() => {
+                console.log(
+                    `Removing entry for event ${eventId} - ${
+                        Object.keys(this.eventStatus[eventId]).length
+                    } paths were invalidated`
+                );
                 delete this.eventStatus[eventId];
-                console.log(`Removed entry for event ${eventId}`);
             }, this.eventTimeout);
 
             return false;
@@ -81,9 +86,8 @@ app.get('/revalidator-proxy', (req, res) => {
     );
 
     if (eventWasProcessedForPath) {
-        return res
-            .status(200)
-            .send(`This event has already been processsed for ${path}`);
+        const msg = `${path} has already been processsed for event ${eventId}`;
+        return res.status(200).send(msg);
     }
 
     callClients((address) =>

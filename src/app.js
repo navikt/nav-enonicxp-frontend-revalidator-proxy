@@ -87,6 +87,7 @@ app.get('/revalidator-proxy', (req, res) => {
 
     if (eventWasProcessedForPath) {
         const msg = `${path} has already been processsed for event ${eventId}`;
+        console.log(msg);
         return res.status(200).send(msg);
     }
 

@@ -37,16 +37,17 @@ const recentEvents = {
 const legacyHandler = (req, res, clients) => {
     const { secret } = req.headers;
     const { path, eventId } = req.query;
-    const encodedPath = encodeURI(path);
 
     if (secret !== SERVICE_SECRET) {
-        console.error(`Proxy request denied for ${encodedPath} (401)`);
+        console.error(`Proxy request denied for ${path} (401)`);
         return res.status(401).send('Not authorized');
     }
 
     if (!path) {
         return res.status(400).send('Path-parameter must be provided');
     }
+
+    const encodedPath = encodeURI(path);
 
     const eventWasProcessedForPath = recentEvents.updateEventStatus(
         path,
@@ -59,7 +60,11 @@ const legacyHandler = (req, res, clients) => {
         return res.status(200).send(msg);
     }
 
-    callClients(clients, encodedPath, eventId, { secret: SERVICE_SECRET });
+    callClients(clients, `${encodedPath}?invalidate=true`, eventId, {
+        headers: {
+            secret: SERVICE_SECRET,
+        },
+    });
 
     const msg = `Sent invalidation request for ${encodedPath} with eventId ${eventId} to all clients`;
     console.log(msg);

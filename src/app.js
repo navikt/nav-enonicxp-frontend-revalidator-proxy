@@ -1,20 +1,18 @@
-const express = require('express');
-const fetch = require('node-fetch');
-const dotenv = require('dotenv');
-const bodyParser = require('body-parser');
+require('dotenv').config();
 
-dotenv.config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const { legacyHandler } = require('./app-legacy');
+const { callClients } = require('./proxy-request');
 
 const app = express();
 const appPort = 3002;
 
-const clientPort = 3000;
-const clientStaleTime = 10000;
-const clientsAddressHeartbeat = {};
+const jsonBodyParser = bodyParser.json();
 
 const { SERVICE_SECRET } = process.env;
 
-const jsonBodyParser = bodyParser.json();
+const clientAddressToHeartbeatMap = {};
 
 // Revalidate requests from Enonic XP are sent independently by every node in the server cluster.
 // Each request has an associated eventid, which corresponds to a publishing event. This id is identical across all
@@ -46,31 +44,10 @@ const recentEvents = {
     },
 };
 
-const callClients = (path, eventid, options) => {
-    Object.entries(clientsAddressHeartbeat).forEach(
-        ([address, lastHeartbeat]) => {
-            if (Date.now() - lastHeartbeat < clientStaleTime) {
-                const url = `http://${address}:${clientPort}${path}`;
-                fetch(url, options)
-                    .then((res) => {
-                        if (!res.ok) {
-                            throw new Error(
-                                `${res.status} - ${res.statusText}`
-                            );
-                        }
-                    })
-                    .catch((e) =>
-                        console.error(
-                            `Request to ${url} failed for event ${eventid} - ${e}`
-                        )
-                    );
-            } else {
-                console.log(`Removing stale client: ${address}`);
-                delete clientsAddressHeartbeat[address];
-            }
-        }
-    );
-};
+// TODO: this can be removed once it is no longer in use in the XP backend
+app.get('/revalidator-proxy', (req, res) =>
+    legacyHandler(req, res, clientAddressToHeartbeatMap)
+);
 
 app.post('/revalidator-proxy', jsonBodyParser, (req, res) => {
     const { secret, eventid } = req.headers;
@@ -97,7 +74,7 @@ app.post('/revalidator-proxy', jsonBodyParser, (req, res) => {
         return res.status(200).send(msg);
     }
 
-    callClients('/invalidate', eventid, {
+    callClients(clientAddressToHeartbeatMap, '/invalidate', eventid, {
         method: 'POST',
         headers: {
             secret: SERVICE_SECRET,
@@ -125,7 +102,7 @@ app.get('/revalidator-proxy/wipe-all', (req, res) => {
         return res.status(401).send('Not authorized');
     }
 
-    callClients('/invalidate/wipe-all', eventid, {
+    callClients(clientAddressToHeartbeatMap, '/invalidate/wipe-all', eventid, {
         method: 'GET',
         headers: {
             secret: SERVICE_SECRET,
@@ -152,11 +129,11 @@ app.get('/liveness', (req, res) => {
         return res.status(400).send('No address provided');
     }
 
-    if (!clientsAddressHeartbeat[address]) {
+    if (!clientAddressToHeartbeatMap[address]) {
         console.log(`New client: ${address}`);
     }
 
-    clientsAddressHeartbeat[address] = Date.now();
+    clientAddressToHeartbeatMap[address] = Date.now();
 
     res.status(200).send(`${address} liveness updated`);
 });

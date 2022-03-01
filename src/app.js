@@ -1,6 +1,7 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
 
 dotenv.config();
 
@@ -15,42 +16,35 @@ const { SERVICE_SECRET } = process.env;
 
 const options = { headers: { secret: SERVICE_SECRET } };
 
+const jsonBodyParser = bodyParser.json();
+
 // Revalidate requests from Enonic XP are sent independently by every node in the server cluster.
 // Each request has an associated eventId, which corresponds to a publishing event. This id is identical across all
 // servers per event.
 //
-// This object keeps track of which requests per event that have already been proxied to the frontend, and prevents
-// duplicate calls for the same path under the same event. We remove the entries after the specified timeout to prevent
-// the list from growing large. Generally, all requests for an event are sent in less than a second.
+// This object keeps track of which requests per event that have already been proxied to the frontend and prevents
+// duplicate calls for the same event
 const recentEvents = {
     eventTimeout: 10000,
     eventStatus: {},
-    updateEventStatus: function (path, eventId) {
+    updateEventStatus: function (eventId) {
         if (!eventId) {
             return false;
         }
 
-        if (!this.eventStatus[eventId]) {
-            console.log(`Adding entry for event ${eventId}`);
-            this.eventStatus[eventId] = {
-                [path]: true,
-            };
-            setTimeout(() => {
-                console.log(
-                    `Removing entry for event ${eventId} - ${
-                        Object.keys(this.eventStatus[eventId]).length
-                    } paths were invalidated`
-                );
-                delete this.eventStatus[eventId];
-            }, this.eventTimeout);
-
-            return false;
-        } else if (!this.eventStatus[eventId][path]) {
-            this.eventStatus[eventId][path] = true;
-            return false;
+        if (this.eventStatus[eventId]) {
+            return true;
         }
 
-        return true;
+        console.log(`Adding entry for event ${eventId}`);
+        this.eventStatus[eventId] = true;
+
+        setTimeout(() => {
+            console.log(`Event ${eventId} expired`);
+            delete this.eventStatus[eventId];
+        }, this.eventTimeout);
+
+        return false;
     },
 };
 
@@ -67,43 +61,48 @@ const callClients = (callback) => {
     );
 };
 
-app.get('/revalidator-proxy', (req, res) => {
-    const { secret } = req.headers;
-    const { path, eventId } = req.query;
-    const encodedPath = encodeURI(path);
+app.post('/revalidator-proxy', jsonBodyParser, (req, res) => {
+    const { secret, eventId } = req.headers;
 
     if (secret !== SERVICE_SECRET) {
-        console.error(`Proxy request denied for ${encodedPath} (401)`);
+        console.error(`Proxy request denied for event ${eventId} (401)`);
         return res.status(401).send('Not authorized');
     }
 
-    if (!path) {
-        return res.status(400).send('Path-parameter must be provided');
+    const { paths } = req.body;
+
+    if (!Array.isArray(paths)) {
+        return res
+            .status(400)
+            .send('Body field "paths" is required and must be an array');
     }
 
-    const eventWasProcessedForPath = recentEvents.updateEventStatus(
-        path,
-        eventId
-    );
+    const eventWasProcessed = recentEvents.updateEventStatus(eventId);
 
-    if (eventWasProcessedForPath) {
-        const msg = `${path} has already been processsed for event ${eventId}`;
+    if (eventWasProcessed) {
+        const msg = `Event ${eventId} has already been processsed`;
         console.log(msg);
         return res.status(200).send(msg);
     }
 
     callClients((address) =>
-        fetch(
-            `http://${address}:${clientPort}${encodedPath}?invalidate=true`,
-            options
-        ).catch((e) =>
+        fetch(`http://${address}:${clientPort}?invalidatePaths=true`, {
+            ...options,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ paths, eventId }),
+        }).catch((e) =>
             console.error(
-                `Error while requesting revalidation to ${address} of ${encodedPath} - ${e}`
+                `Error while requesting revalidation to ${address} of ${eventId} - ${e}`
             )
         )
     );
 
-    const msg = `Sent invalidation request for ${encodedPath} with eventId ${eventId} to all clients`;
+    const msg = `Sent invalidation request for eventId ${eventId} to all clients - Paths: ${paths.join(
+        ', '
+    )}`;
     console.log(msg);
     res.status(200).send(msg);
 });
@@ -167,6 +166,7 @@ const server = app.listen(appPort, () => {
         throw new Error(msg);
     }
     console.log(`Server starting on port ${appPort}`);
+    console.log('WHAT');
 });
 
 const shutdown = () => {

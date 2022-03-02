@@ -6,28 +6,28 @@ const { callClients } = require('../clients');
 //
 // This object keeps track of which requests per event that have already been proxied to the frontend and prevents
 // duplicate calls for the same event
-const recentEvents = {
-    eventTimeout: 10000,
-    eventStatus: {},
-    updateEventStatus: function (eventid) {
-        if (!eventid) {
-            return false;
-        }
+const eventStatus = {};
 
-        if (this.eventStatus[eventid]) {
-            return true;
-        }
+const eventTimeout = 10000;
 
-        console.log(`Adding entry for event ${eventid}`);
-        this.eventStatus[eventid] = true;
-
-        setTimeout(() => {
-            console.log(`Event ${eventid} expired`);
-            delete this.eventStatus[eventid];
-        }, this.eventTimeout);
-
+const updateEventStatus = (eventid) => {
+    if (!eventid) {
         return false;
-    },
+    }
+
+    if (eventStatus[eventid]) {
+        return true;
+    }
+
+    console.log(`Adding entry for event ${eventid}`);
+    eventStatus[eventid] = true;
+
+    setTimeout(() => {
+        console.log(`Event ${eventid} expired`);
+        delete eventStatus[eventid];
+    }, eventTimeout);
+
+    return false;
 };
 
 const invalidatePathsHandler = (req, res) => {
@@ -42,7 +42,7 @@ const invalidatePathsHandler = (req, res) => {
             .send('Body field "paths" is required and must be an array');
     }
 
-    const eventWasProcessed = recentEvents.updateEventStatus(eventid);
+    const eventWasProcessed = updateEventStatus(eventid);
 
     if (eventWasProcessed) {
         const msg = `Event ${eventid} has already been processsed`;

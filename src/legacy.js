@@ -1,8 +1,6 @@
-const { callClients } = require('./proxy-request');
+// TODO: remove this when no longer consumed by XP
 
-const { SERVICE_SECRET } = process.env;
-
-const options = { headers: { secret: SERVICE_SECRET } };
+const { callClients } = require('./clients');
 
 const recentEvents = {
     eventTimeout: 10000,
@@ -36,14 +34,8 @@ const recentEvents = {
     },
 };
 
-const legacyWipePath = (req, res, clients) => {
-    const { secret } = req.headers;
+const invalidatePathLegacyHandler = (req, res) => {
     const { path, eventId } = req.query;
-
-    if (secret !== SERVICE_SECRET) {
-        console.error(`Proxy request denied for ${path} (401)`);
-        return res.status(401).send('Not authorized');
-    }
 
     if (!path) {
         return res.status(400).send('Path-parameter must be provided');
@@ -62,26 +54,19 @@ const legacyWipePath = (req, res, clients) => {
         return res.status(200).send(msg);
     }
 
-    callClients(clients, `${encodedPath}?invalidate=true`, eventId, options);
+    callClients(`${encodedPath}?invalidate=true`, eventId);
 
     const msg = `Sent invalidation request for ${encodedPath} with eventId ${eventId} to all clients`;
     console.log(msg);
     res.status(200).send(msg);
 };
 
-const legacyWipeAll = (req, res, clients) => {
-    const { secret } = req.headers;
-
-    if (secret !== SERVICE_SECRET) {
-        console.error(`Proxy request denied for wipe-all (401)`);
-        return res.status(401).send('Not authorized');
-    }
-
-    callClients(clients, '?wipeAll=true', 'legacy', options);
+const legacyWipeAll = (req, res) => {
+    callClients('?wipeAll=true', 'legacy');
 
     const msg = 'Sent wipe-all request to all clients';
     console.log(msg);
     res.status(200).send(msg);
 };
 
-module.exports = { legacyWipePath, legacyWipeAll };
+module.exports = { invalidatePathLegacyHandler, legacyWipeAll };

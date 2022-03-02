@@ -1,157 +1,40 @@
 require('dotenv').config();
 
 const express = require('express');
-const bodyParser = require('body-parser');
-const { legacyWipePath, legacyWipeAll } = require('./legacy');
-const { callClients } = require('./proxy-request');
+const { invalidatePathLegacyHandler } = require('./legacy');
+const { heartbeatHandler } = require('./req-handlers/heartbeat');
+const { invalidatePathsHandler } = require('./req-handlers/invalidate-paths');
+const { invalidateAllHandler } = require('./req-handlers/invalidate-all');
+const { authHandler } = require('./req-handlers/auth');
 
-const app = express();
 const appPort = 3002;
+const app = express();
 
-const jsonBodyParser = bodyParser.json();
+const jsonBodyParser = express.json();
 
-const { SERVICE_SECRET } = process.env;
+app.get('/revalidator-proxy', authHandler, invalidatePathLegacyHandler);
 
-const clientAddressToHeartbeatMap = {};
-
-// Revalidate requests from Enonic XP are sent independently by every node in the server cluster.
-// Each request has an associated eventid, which corresponds to a publishing event. This id is identical across all
-// servers per event.
-//
-// This object keeps track of which requests per event that have already been proxied to the frontend and prevents
-// duplicate calls for the same event
-const recentEvents = {
-    eventTimeout: 10000,
-    eventStatus: {},
-    updateEventStatus: function (eventid) {
-        if (!eventid) {
-            return false;
-        }
-
-        if (this.eventStatus[eventid]) {
-            return true;
-        }
-
-        console.log(`Adding entry for event ${eventid}`);
-        this.eventStatus[eventid] = true;
-
-        setTimeout(() => {
-            console.log(`Event ${eventid} expired`);
-            delete this.eventStatus[eventid];
-        }, this.eventTimeout);
-
-        return false;
-    },
-};
-
-// TODO: this can be removed once it is no longer in use in the XP backend
-app.get('/revalidator-proxy', (req, res) =>
-    legacyWipePath(req, res, clientAddressToHeartbeatMap)
+app.post(
+    '/revalidator-proxy',
+    authHandler,
+    jsonBodyParser,
+    invalidatePathsHandler
 );
 
-app.post('/revalidator-proxy', jsonBodyParser, (req, res) => {
-    const { secret, eventid } = req.headers;
+app.get('/revalidator-proxy/wipe-all', authHandler, invalidateAllHandler);
 
-    if (secret !== SERVICE_SECRET) {
-        console.error(`Proxy request denied for event ${eventid} (401)`);
-        return res.status(401).send('Not authorized');
-    }
+app.get('/liveness', authHandler, heartbeatHandler);
 
-    const { paths } = req.body;
-
-    if (!Array.isArray(paths)) {
-        console.error(`Bad request for event ${eventid}`);
-        return res
-            .status(400)
-            .send('Body field "paths" is required and must be an array');
-    }
-
-    const eventWasProcessed = recentEvents.updateEventStatus(eventid);
-
-    if (eventWasProcessed) {
-        const msg = `Event ${eventid} has already been processsed`;
-        console.log(msg);
-        return res.status(200).send(msg);
-    }
-
-    callClients(clientAddressToHeartbeatMap, '/invalidate', eventid, {
-        method: 'POST',
-        headers: {
-            secret: SERVICE_SECRET,
-            eventid,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ paths }),
-    });
-
-    const msg = `Sent invalidation request for event ${eventid} to all clients - Paths: ${paths.join(
-        ', '
-    )}`;
-    console.log(msg);
-
-    res.status(200).send(msg);
-});
-
-app.get('/revalidator-proxy/wipe-all', (req, res) => {
-    const { secret, eventid } = req.headers;
-
-    if (!eventid) {
-        return legacyWipeAll(req, res, clientAddressToHeartbeatMap);
-    }
-
-    if (secret !== SERVICE_SECRET) {
-        console.error(
-            `Proxy request denied for wipe-all event id ${eventid} (401)`
-        );
-        return res.status(401).send('Not authorized');
-    }
-
-    callClients(clientAddressToHeartbeatMap, '/invalidate/wipe-all', eventid, {
-        method: 'GET',
-        headers: {
-            secret: SERVICE_SECRET,
-            eventid,
-        },
-    });
-
-    const msg = 'Sent wipe-all request to all clients';
-    console.log(msg);
-
-    res.status(200).send(msg);
-});
-
-app.get('/liveness', (req, res) => {
-    const { secret } = req.headers;
-    const { address } = req.query;
-
-    if (secret !== SERVICE_SECRET) {
-        console.log(`Liveness request denied for ${address} (401)`);
-        return res.status(401).send('Not authorized');
-    }
-
-    if (!address) {
-        return res.status(400).send('No address provided');
-    }
-
-    if (!clientAddressToHeartbeatMap[address]) {
-        console.log(`New client: ${address}`);
-    }
-
-    clientAddressToHeartbeatMap[address] = Date.now();
-
-    res.status(200).send(`${address} liveness updated`);
-});
-
+// For nais liveness/readyness checks
 app.get('/internal/isAlive', (req, res) => {
-    return res.status(200).send('Ok!');
+    return res.status(200).send("I'm alive!");
 });
-
 app.get('/internal/isReady', (req, res) => {
-    return res.status(200).send('Ok!');
+    return res.status(200).send("I'm ready!");
 });
 
 const server = app.listen(appPort, () => {
-    if (!SERVICE_SECRET) {
+    if (!process.env.SERVICE_SECRET) {
         const msg = 'Authentication key is not defined - shutting down';
         console.error(msg);
         throw new Error(msg);

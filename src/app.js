@@ -39,6 +39,7 @@ const server = app.listen(appPort, () => {
         console.error(msg);
         throw new Error(msg);
     }
+
     console.log(`Server starting on port ${appPort}`);
 });
 

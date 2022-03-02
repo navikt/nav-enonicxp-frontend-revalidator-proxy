@@ -5,7 +5,7 @@ const invalidateAllHandler = (req, res) => {
     const { eventid } = req.headers;
 
     if (!eventid) {
-        return legacyWipeAll(req, res, clientAddressToHeartbeatMap);
+        return legacyWipeAll(req, res);
     }
 
     callClients('/invalidate/wipe-all', eventid, {

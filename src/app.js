@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const { legacyHandler } = require('./app-legacy');
+const { legacyWipePath, legacyWipeAll } = require('./legacy');
 const { callClients } = require('./proxy-request');
 
 const app = express();
@@ -46,7 +46,7 @@ const recentEvents = {
 
 // TODO: this can be removed once it is no longer in use in the XP backend
 app.get('/revalidator-proxy', (req, res) =>
-    legacyHandler(req, res, clientAddressToHeartbeatMap)
+    legacyWipePath(req, res, clientAddressToHeartbeatMap)
 );
 
 app.post('/revalidator-proxy', jsonBodyParser, (req, res) => {
@@ -94,6 +94,10 @@ app.post('/revalidator-proxy', jsonBodyParser, (req, res) => {
 
 app.get('/revalidator-proxy/wipe-all', (req, res) => {
     const { secret, eventid } = req.headers;
+
+    if (!eventid) {
+        return legacyWipeAll(req, res, clientAddressToHeartbeatMap);
+    }
 
     if (secret !== SERVICE_SECRET) {
         console.error(

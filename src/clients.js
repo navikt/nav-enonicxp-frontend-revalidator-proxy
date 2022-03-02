@@ -13,7 +13,7 @@ const updateClient = (address) => {
     clientAddressToHeartbeatMap[address] = Date.now();
 };
 
-const callClients = (path, eventid, options) => {
+const callClients = (path, eventid, options = {}) => {
     Object.entries(clientAddressToHeartbeatMap).forEach(
         ([address, lastHeartbeat]) => {
             if (Date.now() - lastHeartbeat < clientStaleTime) {

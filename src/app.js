@@ -4,9 +4,9 @@ const express = require('express');
 const { heartbeatHandler } = require('./req-handlers/heartbeat');
 const { invalidatePathsHandler } = require('./req-handlers/invalidate-paths');
 const { invalidateAllHandler } = require('./req-handlers/invalidate-all');
-const { authHandler } = require('./req-handlers/auth');
+const { authMiddleware } = require('./req-handlers/auth');
 const {
-    setCacheKeyHandler,
+    setCacheKeyMiddleware,
     getCacheKeyHandler,
 } = require('./req-handlers/cache-key');
 
@@ -17,20 +17,20 @@ const jsonBodyParser = express.json();
 
 app.post(
     '/revalidator-proxy',
-    authHandler,
+    authMiddleware,
     jsonBodyParser,
-    setCacheKeyHandler,
+    setCacheKeyMiddleware,
     invalidatePathsHandler
 );
 
 app.get(
     '/revalidator-proxy/wipe-all',
-    authHandler,
-    setCacheKeyHandler,
+    authMiddleware,
+    setCacheKeyMiddleware,
     invalidateAllHandler
 );
 
-app.get('/liveness', authHandler, heartbeatHandler);
+app.get('/liveness', authMiddleware, heartbeatHandler);
 
 app.get('/get-cache-key', getCacheKeyHandler);
 

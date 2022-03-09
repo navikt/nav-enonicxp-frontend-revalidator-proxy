@@ -5,7 +5,7 @@ const currentCacheKey = {
     key: uuid(),
 };
 
-const setCacheKeyHandler = (req, res, next) => {
+const setCacheKeyMiddleware = (req, res, next) => {
     const { eventid } = req.headers;
 
     currentCacheKey.timestamp = Date.now();
@@ -25,5 +25,5 @@ const getCacheKeyHandler = (req, res) => {
 
 module.exports = {
     getCacheKeyHandler,
-    setCacheKeyHandler,
+    setCacheKeyMiddleware,
 };

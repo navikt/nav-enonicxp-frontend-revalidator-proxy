@@ -1,16 +1,12 @@
-const { legacyWipeAll } = require('../legacy');
 const { callClients } = require('../clients');
 
 const invalidateAllHandler = (req, res) => {
-    const { eventid } = req.headers;
-
-    if (!eventid) {
-        return legacyWipeAll(req, res);
-    }
+    const { eventid, cachekey } = req.headers;
 
     callClients('/invalidate/wipe-all', eventid, {
         headers: {
             eventid,
+            cachekey,
         },
     });
 

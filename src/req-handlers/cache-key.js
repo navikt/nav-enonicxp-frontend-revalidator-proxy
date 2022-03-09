@@ -14,7 +14,7 @@ const setCacheKeyHandler = (req, res, next) => {
         `Updated cache timestamp/key ${currentCacheKey.timestamp}/${currentCacheKey.key}`
     );
 
-    res.set('cachekey', currentCacheKey.key);
+    res.setHeader('cachekey', currentCacheKey.key);
 
     return next();
 };
@@ -25,5 +25,5 @@ const getCacheKeyHandler = (req, res) => {
 
 module.exports = {
     getCacheKeyHandler,
-    updateCacheKeyHandler: setCacheKeyHandler,
+    setCacheKeyHandler,
 };

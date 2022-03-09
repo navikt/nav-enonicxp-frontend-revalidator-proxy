@@ -31,7 +31,8 @@ const updateEventStatus = (eventid) => {
 };
 
 const invalidatePathsHandler = (req, res) => {
-    const { eventid, cachekey } = req.headers;
+    const { eventid } = req.headers;
+    const { cachekey } = res.getHeaders();
 
     const { paths } = req.body;
 

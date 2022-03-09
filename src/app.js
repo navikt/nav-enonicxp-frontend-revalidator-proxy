@@ -6,7 +6,7 @@ const { invalidatePathsHandler } = require('./req-handlers/invalidate-paths');
 const { invalidateAllHandler } = require('./req-handlers/invalidate-all');
 const { authHandler } = require('./req-handlers/auth');
 const {
-    updateCacheKeyHandler,
+    setCacheKeyHandler,
     getCacheKeyHandler,
 } = require('./req-handlers/cache-key');
 
@@ -19,14 +19,14 @@ app.post(
     '/revalidator-proxy',
     authHandler,
     jsonBodyParser,
-    updateCacheKeyHandler,
+    setCacheKeyHandler,
     invalidatePathsHandler
 );
 
 app.get(
     '/revalidator-proxy/wipe-all',
     authHandler,
-    updateCacheKeyHandler,
+    setCacheKeyHandler,
     invalidateAllHandler
 );
 

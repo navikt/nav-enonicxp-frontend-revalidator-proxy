@@ -32,8 +32,6 @@ const updateEventStatus = (eventid) => {
 
 const invalidatePathsHandler = (req, res) => {
     const { eventid } = req.headers;
-    const { cachekey } = res.getHeaders();
-
     const { paths } = req.body;
 
     if (!Array.isArray(paths)) {
@@ -55,7 +53,6 @@ const invalidatePathsHandler = (req, res) => {
         method: 'POST',
         headers: {
             eventid,
-            cachekey,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ paths }),

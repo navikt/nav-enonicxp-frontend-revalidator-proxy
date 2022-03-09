@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const { currentCacheKey } = require('./req-handlers/cache-key');
 
 const clientPort = 3000;
 const clientStaleTime = 10000;
@@ -23,6 +24,8 @@ const callClients = (path, eventid, options = {}) => {
                     headers: {
                         ...options.headers,
                         secret: process.env.SERVICE_SECRET,
+                        cache_key: currentCacheKey.key,
+                        cache_ts: currentCacheKey.timestamp,
                     },
                 })
                     .then((res) => {

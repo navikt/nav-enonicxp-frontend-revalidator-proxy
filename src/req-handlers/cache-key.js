@@ -5,7 +5,7 @@ const currentCacheKey = {
     key: uuid(),
 };
 
-const setCacheKeyMiddleware = (req, res, next) => {
+const updateCacheKeyMiddleware = (req, res, next) => {
     const { eventid } = req.headers;
 
     currentCacheKey.timestamp = Date.now();
@@ -13,8 +13,6 @@ const setCacheKeyMiddleware = (req, res, next) => {
     console.log(
         `Updated cache timestamp/key ${currentCacheKey.timestamp}/${currentCacheKey.key}`
     );
-
-    res.setHeader('cachekey', currentCacheKey.key);
 
     return next();
 };
@@ -25,5 +23,6 @@ const getCacheKeyHandler = (req, res) => {
 
 module.exports = {
     getCacheKeyHandler,
-    setCacheKeyMiddleware,
+    updateCacheKeyMiddleware,
+    currentCacheKey,
 };

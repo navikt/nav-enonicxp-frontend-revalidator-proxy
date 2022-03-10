@@ -9,9 +9,9 @@ const updateCacheKeyMiddleware = (req, res, next) => {
     const { eventid } = req.headers;
 
     currentCacheKey.timestamp = Date.now();
-    currentCacheKey.key = `${uuid()}_${eventid}`;
+    currentCacheKey.key = uuid();
     console.log(
-        `Updated cache timestamp/key ${currentCacheKey.timestamp}/${currentCacheKey.key}`
+        `Updated cache timestamp/key ${currentCacheKey.timestamp}/${currentCacheKey.key} for event id ${eventid}`
     );
 
     return next();

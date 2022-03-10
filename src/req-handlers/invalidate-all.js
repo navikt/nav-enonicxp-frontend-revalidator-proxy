@@ -5,7 +5,7 @@ const invalidateAllHandler = (req, res) => {
 
     callClients('/invalidate/wipe-all', eventid);
 
-    const msg = 'Sent wipe-all request to all clients';
+    const msg = `Sent wipe-all request to all clients for event ${eventid}`;
     console.log(msg);
 
     res.status(200).send(msg);

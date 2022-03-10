@@ -32,7 +32,6 @@ const updateEventStatus = (eventid) => {
 
 const invalidatePathsHandler = (req, res) => {
     const { eventid } = req.headers;
-
     const { paths } = req.body;
 
     if (!Array.isArray(paths)) {
@@ -53,7 +52,6 @@ const invalidatePathsHandler = (req, res) => {
     callClients('/invalidate', eventid, {
         method: 'POST',
         headers: {
-            eventid,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ paths }),

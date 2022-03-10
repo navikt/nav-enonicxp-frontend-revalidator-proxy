@@ -1,29 +1,38 @@
 require('dotenv').config();
 
 const express = require('express');
-const { invalidatePathLegacyHandler } = require('./legacy');
 const { heartbeatHandler } = require('./req-handlers/heartbeat');
 const { invalidatePathsHandler } = require('./req-handlers/invalidate-paths');
 const { invalidateAllHandler } = require('./req-handlers/invalidate-all');
-const { authHandler } = require('./req-handlers/auth');
+const { authMiddleware } = require('./req-handlers/auth');
+const {
+    updateCacheKeyMiddleware,
+    getCacheKeyHandler,
+} = require('./req-handlers/cache-key');
 
 const appPort = 3002;
 const app = express();
 
 const jsonBodyParser = express.json();
 
-app.get('/revalidator-proxy', authHandler, invalidatePathLegacyHandler);
-
 app.post(
     '/revalidator-proxy',
-    authHandler,
+    authMiddleware,
     jsonBodyParser,
+    updateCacheKeyMiddleware,
     invalidatePathsHandler
 );
 
-app.get('/revalidator-proxy/wipe-all', authHandler, invalidateAllHandler);
+app.get(
+    '/revalidator-proxy/wipe-all',
+    authMiddleware,
+    updateCacheKeyMiddleware,
+    invalidateAllHandler
+);
 
-app.get('/liveness', authHandler, heartbeatHandler);
+app.get('/liveness', authMiddleware, heartbeatHandler);
+
+app.get('/get-cache-key', getCacheKeyHandler);
 
 // For nais liveness/readyness checks
 app.get('/internal/isAlive', (req, res) => {

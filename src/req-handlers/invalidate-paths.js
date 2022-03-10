@@ -52,7 +52,6 @@ const invalidatePathsHandler = (req, res) => {
     callClients('/invalidate', eventid, {
         method: 'POST',
         headers: {
-            eventid,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ paths }),

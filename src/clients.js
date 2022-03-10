@@ -23,6 +23,7 @@ const callClients = (path, eventid, options = {}) => {
                     ...options,
                     headers: {
                         ...options.headers,
+                        eventid,
                         secret: process.env.SERVICE_SECRET,
                         cache_key: currentCacheKey.key,
                         cache_ts: currentCacheKey.timestamp,

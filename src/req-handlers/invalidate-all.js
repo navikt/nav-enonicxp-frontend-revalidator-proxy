@@ -3,11 +3,7 @@ const { callClients } = require('../clients');
 const invalidateAllHandler = (req, res) => {
     const { eventid } = req.headers;
 
-    callClients('/invalidate/wipe-all', eventid, {
-        headers: {
-            eventid,
-        },
-    });
+    callClients('/invalidate/wipe-all', eventid);
 
     const msg = 'Sent wipe-all request to all clients';
     console.log(msg);

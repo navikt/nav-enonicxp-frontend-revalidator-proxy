@@ -1,13 +1,17 @@
-name: Deploy-to-q6
+name: Deploy-to-prod
 on:
-  workflow_dispatch
+  release:
+    types: [released]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: dev-sbs:q6
+    environment: prod-sbs:personbruker
     steps:
       - uses: actions/checkout@v1
+      - name: Abort if branch is not master
+        if: github.event.release.target_commitish != 'master'
+        run: echo "Release is not on master, aborting"; exit 1;
       - name: Define build environment
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,20 +38,21 @@ jobs:
       - name: Docker build and push
         run: |
           echo $GITHUB_TOKEN | docker login $IMAGE_REGISTRY -u ${GITHUB_REPOSITORY} --password-stdin
-          docker build -t $IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION .
+          docker build -t $IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION -t $IMAGE_REGISTRY/$IMAGE_NAME:latest .
           docker push $IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION
+          docker push $IMAGE_REGISTRY/$IMAGE_NAME:latest
       - name: Generate nais variables
         run: |
           cat > .nais/vars.yaml <<EOF
-          namespace: q6
+          namespace: personbruker
           ingresses:
-            - https://nav-enonicxp-frontend-revalidator-proxy-q6.dev.nav.no
+            - https://nav-enonicxp-frontend-revalidator-proxy.nais.oera.no
           image: $IMAGE_REGISTRY/$IMAGE_NAME
           version: $IMAGE_VERSION
           EOF
       - uses: nais/deploy/actions/deploy@master
         env:
-          CLUSTER: dev-sbs
+          CLUSTER: prod-sbs
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          RESOURCE: .nais/config.yaml
+          RESOURCE: .nais/config-sbs.yaml
           VARS: .nais/vars.yaml

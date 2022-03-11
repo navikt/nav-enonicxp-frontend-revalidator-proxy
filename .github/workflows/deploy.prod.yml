@@ -1,58 +1,17 @@
-name: Deploy-to-prod
+name: Deploy to dev2
 on:
-  release:
-    types: [released]
+  workflow_dispatch
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment: prod-sbs:personbruker
-    steps:
-      - uses: actions/checkout@v1
-      - name: Abort if branch is not master
-        if: github.event.release.target_commitish != 'master'
-        run: echo "Release is not on master, aborting"; exit 1;
-      - name: Define build environment
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "CI=true" >> $GITHUB_ENV
-          echo "IMAGE_REGISTRY=docker.pkg.github.com/$(echo ${GITHUB_REPOSITORY})" >> $GITHUB_ENV
-          echo "IMAGE_NAME=$(echo ${GITHUB_REPOSITORY##*/})" >> $GITHUB_ENV
-          echo "IMAGE_VERSION=$(echo ${GITHUB_WORKFLOW})-$(echo ${GITHUB_SHA})" >> $GITHUB_ENV
-          echo "GITHUB_TOKEN=$(echo ${GITHUB_TOKEN})" >> $GITHUB_ENV
-      - name: Define app environmment
-        env:
-          SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}
-        run: |
-          cat > .env <<EOF
-          SERVICE_SECRET=$SERVICE_SECRET
-          EOF
-      - uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - run: npm ci
-      - name: Docker build and push
-        run: |
-          echo $GITHUB_TOKEN | docker login $IMAGE_REGISTRY -u ${GITHUB_REPOSITORY} --password-stdin
-          docker build -t $IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION -t $IMAGE_REGISTRY/$IMAGE_NAME:latest .
-          docker push $IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION
-          docker push $IMAGE_REGISTRY/$IMAGE_NAME:latest
-      - name: Generate nais variables
-        run: |
-          cat > .nais/vars.yaml <<EOF
-          namespace: personbruker
-          ingresses:
-            - https://nav-enonicxp-frontend-revalidator-proxy.nais.oera.no
-          image: $IMAGE_REGISTRY/$IMAGE_NAME
-          version: $IMAGE_VERSION
-          EOF
-      - uses: nais/deploy/actions/deploy@master
-        env:
-          CLUSTER: prod-sbs
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          RESOURCE: .nais/config.yaml
-          VARS: .nais/vars.yaml
+  build-and-deploy:
+    uses: ./.github/workflows/build-and-deploy.yml
+    with:
+      environment: dev-gcp:dev2
+      imagename: dev2-deploy
+      ingress: https://nav-enonicxp-frontend-revalidator-proxy-dev2.dev.nav.no
+      appName: nav-enonicxp-frontend-revalidator-proxy-dev2
+      frontendAppName: nav-enonicxp-frontend-dev2
+      cluster: dev-gcp
+    secrets:
+      SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}
+      NAIS_DEPLOY_APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}

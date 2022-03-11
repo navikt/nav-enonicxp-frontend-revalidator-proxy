@@ -75,5 +75,5 @@ jobs:
         env:
           CLUSTER: ${{ inputs.cluster }}
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          RESOURCE: .nais/config-new.yaml
+          RESOURCE: .nais/config.yaml
           VARS: .nais/vars.yaml

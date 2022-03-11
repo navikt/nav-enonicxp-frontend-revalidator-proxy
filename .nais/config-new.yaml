@@ -18,9 +18,6 @@ spec:
     initialDelay: 10
   ingresses:
     - {{ingress}}
-  env:
-    - name: SERVICE_SECRET
-      value: "{{SERVICE_SECRET}}"
   accessPolicy:
     inbound:
       rules:

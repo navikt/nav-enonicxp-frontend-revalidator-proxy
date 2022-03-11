@@ -45,6 +45,13 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Define app environmment
+        env:
+          SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}
+        run: |
+          cat > .env <<EOF
+          SERVICE_SECRET=$SERVICE_SECRET
+          EOF
       - name: Login to Docker registry
         uses: docker/login-action@v1
         with:
@@ -63,7 +70,6 @@ jobs:
           frontendAppName: ${{ inputs.frontendAppName }}
           image: ${{ env.image }}
           ingress: ${{ inputs.ingress }}
-          SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}
           EOF
       - uses: nais/deploy/actions/deploy@master
         env:

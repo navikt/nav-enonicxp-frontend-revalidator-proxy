@@ -10,6 +10,7 @@ jobs:
       imagename: dev2-deploy
       ingress: https://nav-enonicxp-frontend-revalidator-proxy-dev2.dev.intern.nav.no
       appName: nav-enonicxp-frontend-revalidator-proxy-dev2
+      frontendAppName: nav-enonicxp-frontend-dev2
       cluster: dev-gcp
     secrets:
       SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}

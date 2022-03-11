@@ -21,6 +21,13 @@ spec:
   env:
     - name: SERVICE_SECRET
       value: {{SERVICE_SECRET}}
+  accessPolicy:
+    inbound:
+      rules:
+        - application: {{frontendAppName}}
+    outbound:
+      rules:
+        - application: {{frontendAppName}}
   replicas:
     min: 1
     max: 1

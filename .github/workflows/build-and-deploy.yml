@@ -17,6 +17,9 @@ on:
       appName:
         required: true
         type: string
+      frontendAppName:
+        required: true
+        type: string
     secrets:
       SERVICE_SECRET:
         required: true
@@ -57,6 +60,7 @@ jobs:
         run: |
           cat > .nais/vars.yaml <<EOF
           appName: ${{ inputs.appName }}
+          frontendAppName: ${{ inputs.frontendAppName }}
           image: ${{ env.image }}
           ingress: ${{ inputs.ingress }}
           SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}

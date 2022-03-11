@@ -1,0 +1,15 @@
+name: Deploy to dev2
+on:
+  workflow_dispatch
+
+jobs:
+  build-and-deploy:
+    uses: ./github/workflows/build-and-deploy.yaml
+    with:
+      environment: dev-gcp:dev2
+      imagename: dev2-deploy
+      ingress: https://nav-enonicxp-frontend-revalidator-proxy-dev2.dev.intern.nav.no
+      appName: nav-enonicxp-frontend-revalidator-proxy-dev2
+      cluster: dev-gcp
+    secrets:
+      SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}

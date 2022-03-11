@@ -1,4 +1,4 @@
-name: Deploy to dev2
+name: Deploy to prod
 on:
   workflow_dispatch
 
@@ -6,12 +6,12 @@ jobs:
   build-and-deploy:
     uses: ./.github/workflows/build-and-deploy.yml
     with:
-      environment: dev-gcp:dev2
-      imagename: dev2-deploy
-      ingress: https://nav-enonicxp-frontend-revalidator-proxy-dev2.dev.nav.no
-      appName: nav-enonicxp-frontend-revalidator-proxy-dev2
-      frontendAppName: nav-enonicxp-frontend-dev2
-      cluster: dev-gcp
+      environment: prod-gcp
+      imagename: prod-deploy
+      ingress: https://nav-enonicxp-frontend-revalidator-proxy.intern.nav.no
+      appName: nav-enonicxp-frontend-revalidator-proxy
+      frontendAppName: nav-enonicxp-frontend
+      cluster: prod-gcp
     secrets:
       SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}
       NAIS_DEPLOY_APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}

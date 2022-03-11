@@ -20,7 +20,7 @@ spec:
     - {{ingress}}
   env:
     - name: SERVICE_SECRET
-      value: {{serviceSecret}}
+      value: {{SERVICE_SECRET}}
   replicas:
     min: 1
     max: 1

@@ -13,3 +13,4 @@ jobs:
       cluster: dev-gcp
     secrets:
       SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}
+      NAIS_DEPLOY_APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}

@@ -4,7 +4,7 @@ on:
 
 jobs:
   build-and-deploy:
-    uses: ./github/workflows/build-and-deploy.yaml
+    uses: ./.github/workflows/build-and-deploy.yml
     with:
       environment: dev-gcp:dev2
       imagename: dev2-deploy

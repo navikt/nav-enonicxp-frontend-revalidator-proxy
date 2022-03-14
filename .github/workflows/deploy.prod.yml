@@ -1,9 +1,11 @@
 name: Deploy to prod
 on:
-  workflow_dispatch
+  release:
+    types: [released]
 
 jobs:
   build-and-deploy:
+    if: github.event.release.target_commitish == 'master'
     uses: ./.github/workflows/build-and-deploy.yml
     with:
       environment: prod-gcp

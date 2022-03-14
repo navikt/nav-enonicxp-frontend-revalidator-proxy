@@ -1,11 +1,11 @@
-name: Deploy to dev-sbs
+name: deploy-to-dev-sbs
 on:
   workflow_dispatch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: dev-gcp:dev1
+    environment: dev-sbs:personbruker
     steps:
       - uses: actions/checkout@v1
       - name: Define build environment

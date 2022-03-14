@@ -1,4 +1,4 @@
-name: Deploy to prod-sbs
+name: deploy-to-prod-sbs
 on:
   release:
     types: [released]

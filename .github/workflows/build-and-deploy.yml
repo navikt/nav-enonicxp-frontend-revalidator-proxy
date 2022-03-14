@@ -22,8 +22,6 @@ jobs:
     environment: ${{ inputs.environment }}
     env:
       image: ghcr.io/${{ github.repository }}:deploy-${{ inputs.environment }}-${{ github.sha }}
-    outputs:
-      image: ${{ env.image }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -49,5 +47,5 @@ jobs:
           CLUSTER: ${{ inputs.cluster }}
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           RESOURCE: .nais/config.yml
-          VAR: image=${{ inputs.image }}
+          VAR: image=${{ env.image }}
           VARS: .nais/${{ inputs.vars_file }}

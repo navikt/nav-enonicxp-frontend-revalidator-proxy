@@ -48,6 +48,6 @@ jobs:
         env:
           CLUSTER: ${{ inputs.cluster }}
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          RESOURCE: .nais/config.yaml
+          RESOURCE: .nais/config.yml
           VAR: image=${{ inputs.image }}
           VARS: .nais/${{ inputs.vars_file }}

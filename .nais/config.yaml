@@ -20,6 +20,8 @@ spec:
   {{#each ingresses as |url|}}
     - {{url}}
   {{/each}}
+  envFrom:
+    - secret: {{secret}}
   replicas:
     min: 1
     max: 1

@@ -20,9 +20,10 @@ on:
       frontendAppName:
         required: true
         type: string
-    secrets:
-      SERVICE_SECRET:
+      secret_resource:
         required: true
+        type: string
+    secrets:
       NAIS_DEPLOY_APIKEY:
         required: true
 
@@ -63,7 +64,7 @@ jobs:
           frontendAppName: ${{ inputs.frontendAppName }}
           image: ${{ env.image }}
           ingress: ${{ inputs.ingress }}
-          SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}
+          secret: ${{ inputs.secret_resource }}
           EOF
       - uses: nais/deploy/actions/deploy@master
         env:

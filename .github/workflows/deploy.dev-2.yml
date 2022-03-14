@@ -12,6 +12,6 @@ jobs:
       appName: nav-enonicxp-frontend-revalidator-proxy-dev2
       frontendAppName: nav-enonicxp-frontend-dev2
       cluster: dev-gcp
+      secret_resource: nav-enonicxp-dev2
     secrets:
-      SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}
       NAIS_DEPLOY_APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}

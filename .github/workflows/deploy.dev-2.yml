@@ -6,12 +6,8 @@ jobs:
   build-and-deploy:
     uses: ./.github/workflows/build-and-deploy.yml
     with:
-      environment: dev-gcp:dev2
-      imagename: dev2-deploy
-      ingress: https://nav-enonicxp-frontend-revalidator-proxy-dev2.dev.intern.nav.no
-      appName: nav-enonicxp-frontend-revalidator-proxy-dev2
-      frontendApp: nav-enonicxp-frontend-dev2
+      environment: dev2
       cluster: dev-gcp
-      secret_resource: nav-enonicxp-dev2
+      vars_file: vars-dev2.yml
     secrets:
       NAIS_DEPLOY_APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}

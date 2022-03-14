@@ -1,4 +1,6 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 const express = require('express');
 const { heartbeatHandler } = require('./req-handlers/heartbeat');
@@ -43,6 +45,8 @@ app.get('/internal/isReady', (req, res) => {
 });
 
 const server = app.listen(appPort, () => {
+    console.log(`Test docker env: ${process.env.testEnv}`);
+    console.log(`Node env: ${process.env.NODE_ENV}`);
     if (!process.env.SERVICE_SECRET) {
         const msg = 'Authentication key is not defined - shutting down';
         console.error(msg);

@@ -35,7 +35,7 @@ jobs:
           ingresses:
             - https://nav-enonicxp-frontend-revalidator-proxy.dev.nav.no
           image: $IMAGE_REGISTRY/$IMAGE_NAME
-          version: $IMAGE_VERSION
+          version: $IMAGE_VERSION-test
           secret: nav-enonicxp-dev1
           EOF
       - uses: nais/deploy/actions/deploy@master

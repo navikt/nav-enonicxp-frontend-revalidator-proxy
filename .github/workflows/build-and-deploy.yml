@@ -5,22 +5,10 @@ on:
       environment:
         required: true
         type: string
-      imagename:
-        required: true
-        type: string
-      ingress:
-        required: true
-        type: string
       cluster:
         required: true
         type: string
-      appName:
-        required: true
-        type: string
-      frontendAppName:
-        required: true
-        type: string
-      secret_resource:
+      vars_file:
         required: true
         type: string
     secrets:
@@ -33,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     env:
-      image: ghcr.io/${{ github.repository }}:${{ inputs.imagename }}-${{ github.sha }}
+      image: ghcr.io/${{ github.repository }}:deploy-${{ inputs.environment }}-${{ github.sha }}
     outputs:
       image: ${{ env.image }}
     steps:
@@ -53,22 +41,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push docker image
-        id: build_image
         run: |
           docker build -t ${{ env.image }} .
           docker push ${{ env.image }}
-      - name: Set nais variables
-        run: |
-          cat > .nais/vars.yaml <<EOF
-          appName: ${{ inputs.appName }}
-          frontendAppName: ${{ inputs.frontendAppName }}
-          image: ${{ env.image }}
-          ingress: ${{ inputs.ingress }}
-          secret: ${{ inputs.secret_resource }}
-          EOF
       - uses: nais/deploy/actions/deploy@master
         env:
           CLUSTER: ${{ inputs.cluster }}
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          RESOURCE: .nais/config-new.yaml
-          VARS: .nais/vars.yaml
+          RESOURCE: .nais/config.yaml
+          VAR: image=${{ inputs.image }}
+          VARS: .nais/${{ inputs.vars_file }}

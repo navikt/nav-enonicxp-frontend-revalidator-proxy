@@ -8,7 +8,7 @@ jobs:
     with:
       environment: dev-gcp:dev1
       imagename: dev1-deploy
-      ingress: https://nav-enonicxp-frontend-revalidator-proxy-dev1.dev.nav.no
+      ingress: https://nav-enonicxp-frontend-revalidator-proxy-1.dev.nav.no
       appName: nav-enonicxp-frontend-revalidator-proxy-dev1
       frontendAppName: nav-enonicxp-frontend-dev1
       cluster: dev-gcp

@@ -2,12 +2,12 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: nav-enonicxp-frontend-revalidator-proxy
-  namespace: {{namespace}}
+  name: {{appName}}
+  namespace: personbruker
   labels:
     team: personbruker
 spec:
-  image: {{image}}:{{version}}
+  image: {{image}}
   team: personbruker
   port: 3002
   liveness:
@@ -17,9 +17,16 @@ spec:
     path: /internal/isReady
     initialDelay: 10
   ingresses:
-  {{#each ingresses as |url|}}
-    - {{url}}
-  {{/each}}
+    - {{ingress}}
+  envFrom:
+    - secret: {{secret}}
+  accessPolicy:
+    inbound:
+      rules:
+        - application: {{frontendApp}}
+    outbound:
+      rules:
+        - application: {{frontendApp}}
   replicas:
     min: 1
     max: 1

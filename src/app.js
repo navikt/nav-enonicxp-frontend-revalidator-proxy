@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const express = require('express');
 const { heartbeatHandler } = require('./req-handlers/heartbeat');
 const { invalidatePathsHandler } = require('./req-handlers/invalidate-paths');

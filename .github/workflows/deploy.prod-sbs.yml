@@ -1,13 +1,17 @@
-name: Deploy-to-q6
+name: Deploy to prod-sbs
 on:
-  workflow_dispatch
+  release:
+    types: [released]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: dev-sbs:q6
+    environment: prod-sbs:personbruker
     steps:
       - uses: actions/checkout@v1
+      - name: Abort if branch is not master
+        if: github.event.release.target_commitish != 'master'
+        run: echo "Release is not on master, aborting"; exit 1;
       - name: Define build environment
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -17,13 +21,6 @@ jobs:
           echo "IMAGE_NAME=$(echo ${GITHUB_REPOSITORY##*/})" >> $GITHUB_ENV
           echo "IMAGE_VERSION=$(echo ${GITHUB_WORKFLOW})-$(echo ${GITHUB_SHA})" >> $GITHUB_ENV
           echo "GITHUB_TOKEN=$(echo ${GITHUB_TOKEN})" >> $GITHUB_ENV
-      - name: Define app environmment
-        env:
-          SERVICE_SECRET: ${{ secrets.SERVICE_SECRET }}
-        run: |
-          cat > .env <<EOF
-          SERVICE_SECRET=$SERVICE_SECRET
-          EOF
       - uses: actions/cache@v2
         with:
           path: ~/.npm
@@ -34,20 +31,21 @@ jobs:
       - name: Docker build and push
         run: |
           echo $GITHUB_TOKEN | docker login $IMAGE_REGISTRY -u ${GITHUB_REPOSITORY} --password-stdin
-          docker build -t $IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION .
+          docker build -t $IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION -t $IMAGE_REGISTRY/$IMAGE_NAME:latest .
           docker push $IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_VERSION
+          docker push $IMAGE_REGISTRY/$IMAGE_NAME:latest
       - name: Generate nais variables
         run: |
           cat > .nais/vars.yaml <<EOF
-          namespace: q6
           ingresses:
-            - https://nav-enonicxp-frontend-revalidator-proxy-q6.dev.nav.no
+            - https://nav-enonicxp-frontend-revalidator-proxy.nais.oera.no
           image: $IMAGE_REGISTRY/$IMAGE_NAME
           version: $IMAGE_VERSION
+          secret: nav-enonicxp
           EOF
       - uses: nais/deploy/actions/deploy@master
         env:
-          CLUSTER: dev-sbs
+          CLUSTER: prod-sbs
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          RESOURCE: .nais/config.yaml
+          RESOURCE: .nais/config-sbs.yaml
           VARS: .nais/vars.yaml

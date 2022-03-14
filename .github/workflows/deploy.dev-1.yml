@@ -1,4 +1,4 @@
-name: Deploy to dev2
+name: Deploy to dev1
 on:
   workflow_dispatch
 
@@ -6,8 +6,8 @@ jobs:
   build-and-deploy:
     uses: ./.github/workflows/build-and-deploy.yml
     with:
-      environment: dev2
+      environment: dev1
       cluster: dev-gcp
-      vars_file: vars-dev2.yml
+      vars_file: vars-dev1.yml
     secrets:
       NAIS_DEPLOY_APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}

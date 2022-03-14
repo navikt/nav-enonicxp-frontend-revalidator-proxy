@@ -1,0 +1,4 @@
+appName: nav-enonicxp-frontend-revalidator-proxy-dev1
+frontendApp: nav-enonicxp-frontend-dev1
+ingress: https://nav-enonicxp-frontend-revalidator-proxy-1.dev.nav.no
+secret: nav-enonicxp-dev1

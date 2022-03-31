@@ -16,8 +16,9 @@ spec:
   readiness:
     path: /internal/isReady
     initialDelay: 10
-  ingresses:
-    - {{ingress}}
+  {{#each ingresses as |url|}}
+    - {{url}}
+  {{/each}}
   envFrom:
     - secret: {{secret}}
   accessPolicy:

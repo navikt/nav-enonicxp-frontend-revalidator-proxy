@@ -13,8 +13,13 @@ const app = express();
 
 const jsonBodyParser = express.json();
 
+const pathPrefix =
+    process.env.NAIS_CLUSTER_NAME === 'prod-gcp'
+        ? '/revalidator-proxy/internal'
+        : '';
+
 app.post(
-    '/revalidator-proxy',
+    `${pathPrefix}/revalidator-proxy`,
     authMiddleware,
     jsonBodyParser,
     updateCacheKeyMiddleware,
@@ -22,23 +27,29 @@ app.post(
 );
 
 app.get(
-    '/revalidator-proxy/wipe-all',
+    `${pathPrefix}/revalidator-proxy/wipe-all`,
     authMiddleware,
     updateCacheKeyMiddleware,
     invalidateAllHandler
 );
 
-app.get('/liveness', authMiddleware, heartbeatHandler);
+app.get(`${pathPrefix}/liveness`, authMiddleware, heartbeatHandler);
 
-app.get('/get-cache-key', getCacheKeyHandler);
+app.get(`${pathPrefix}/get-cache-key`, getCacheKeyHandler);
 
 // For nais liveness/readyness checks
-app.get('/internal/isAlive', (req, res) => {
-    return res.status(200).send("I'm alive!");
-});
-app.get('/internal/isReady', (req, res) => {
-    return res.status(200).send("I'm ready!");
-});
+app.get(
+    ['/revalidator-proxy/internal/isAlive', '/internal/isAlive'],
+    (req, res) => {
+        return res.status(200).send("I'm alive!");
+    }
+);
+app.get(
+    ['/revalidator-proxy/internal/isReady', '/internal/isReady'],
+    (req, res) => {
+        return res.status(200).send("I'm ready!");
+    }
+);
 
 const server = app.listen(appPort, () => {
     if (!process.env.SERVICE_SECRET) {

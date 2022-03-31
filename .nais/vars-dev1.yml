@@ -4,3 +4,4 @@ ingresses:
   - https://nav-enonicxp-frontend-revalidator-proxy.dev.nav.no
   - https://nav-enonicxp-frontend-revalidator-proxy.dev.intern.nav.no
 secret: nav-enonicxp-dev1
+appPath: ''

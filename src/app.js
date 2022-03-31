@@ -13,13 +13,11 @@ const app = express();
 
 const jsonBodyParser = express.json();
 
-const pathPrefix =
-    process.env.NAIS_CLUSTER_NAME === 'prod-gcp'
-        ? '/revalidator-proxy/internal'
-        : '';
+const basePath =
+    process.env.NAIS_CLUSTER_NAME === 'prod-gcp' ? '/revalidator-proxy' : '';
 
 app.post(
-    `${pathPrefix}/revalidator-proxy`,
+    `${basePath}/revalidator-proxy`,
     authMiddleware,
     jsonBodyParser,
     updateCacheKeyMiddleware,
@@ -27,15 +25,15 @@ app.post(
 );
 
 app.get(
-    `${pathPrefix}/revalidator-proxy/wipe-all`,
+    `${basePath}/revalidator-proxy/wipe-all`,
     authMiddleware,
     updateCacheKeyMiddleware,
     invalidateAllHandler
 );
 
-app.get(`${pathPrefix}/liveness`, authMiddleware, heartbeatHandler);
+app.get(`${basePath}/liveness`, authMiddleware, heartbeatHandler);
 
-app.get(`${pathPrefix}/get-cache-key`, getCacheKeyHandler);
+app.get(`${basePath}/get-cache-key`, getCacheKeyHandler);
 
 // For nais liveness/readyness checks
 app.get(

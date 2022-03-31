@@ -16,6 +16,7 @@ spec:
   readiness:
     path: /internal/isReady
     initialDelay: 10
+  ingresses:
   {{#each ingresses as |url|}}
     - {{url}}
   {{/each}}

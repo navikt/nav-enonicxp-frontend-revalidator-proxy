@@ -26,6 +26,7 @@ spec:
     inbound:
       rules:
         - application: {{frontendApp}}
+        - application: {{frontendFailover}}
     outbound:
       rules:
         - application: {{frontendApp}}

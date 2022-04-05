@@ -1,5 +1,6 @@
 appName: nav-enonicxp-frontend-revalidator-proxy-dev1
 frontendApp: nav-enonicxp-frontend-dev1
+frontendFailover: nav-enonicxp-frontend-dev1-failover
 ingresses:
   - https://nav-enonicxp-frontend-revalidator-proxy.dev.nav.no
   - https://nav-enonicxp-frontend-revalidator-proxy.dev.intern.nav.no

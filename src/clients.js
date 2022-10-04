@@ -1,4 +1,3 @@
-const fetch = require('node-fetch');
 const { currentCacheKey } = require('./req-handlers/cache-key');
 
 const clientPort = 3000;

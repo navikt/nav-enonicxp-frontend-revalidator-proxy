@@ -1,16 +1,10 @@
 FROM node:18-alpine
 
-# Create app directory
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Installing dependencies
-COPY package*.json /usr/src/app/
-RUN npm ci
+COPY package*.json /app/
+COPY node_modules /app/node_modules/
+COPY src /src/
 
-# Copy app source
-COPY src /usr/src/app/src/
-
-# Start app
 EXPOSE 3002
 CMD ["npm", "run", "start"]

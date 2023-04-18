@@ -6,3 +6,9 @@ ingresses:
   - https://nav-enonicxp-frontend-revalidator-proxy.intern.dev.nav.no
 secret: nav-enonicxp-dev1
 appPath: ''
+resources:
+  limits:
+    memory: 1024Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi

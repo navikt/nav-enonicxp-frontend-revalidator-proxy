@@ -8,6 +8,6 @@ jobs:
     with:
       environment: dev1
       cluster: dev-gcp
-      vars_file: vars-dev1.yml
+      vars_file: vars-dev1.ymln
     secrets:
       NAIS_DEPLOY_APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}

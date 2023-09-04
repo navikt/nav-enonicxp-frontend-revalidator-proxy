@@ -5,6 +5,9 @@ on:
 jobs:
   build-and-deploy:
     uses: ./.github/workflows/build-and-deploy.yml
+    permissions:
+      contents: "read"
+      id-token: "write"
     with:
       environment: dev1
       cluster: dev-gcp

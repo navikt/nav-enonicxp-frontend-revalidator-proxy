@@ -7,6 +7,9 @@ jobs:
   build-and-deploy:
     if: github.event.release.target_commitish == 'master'
     uses: ./.github/workflows/build-and-deploy.yml
+    permissions:
+      contents: "read"
+      id-token: "write"
     with:
       environment: prod
       cluster: prod-gcp

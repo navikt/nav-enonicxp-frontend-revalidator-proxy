@@ -11,11 +11,11 @@ spec:
   team: personbruker
   port: 3002
   liveness:
-    path: {{appPath}}/internal/isAlive
-    initialDelay: 10
+    path: /internal/isAlive
+    initialDelay: 5
   readiness:
-    path: {{appPath}}/internal/isReady
-    initialDelay: 10
+    path: /internal/isReady
+    initialDelay: 5
   ingresses:
   {{#each ingresses as |url|}}
     - {{url}}

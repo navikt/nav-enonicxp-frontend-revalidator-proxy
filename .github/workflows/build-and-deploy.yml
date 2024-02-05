@@ -12,8 +12,6 @@ on:
         required: true
         type: string
     secrets:
-      NAIS_DEPLOY_APIKEY:
-        required: true
       NAIS_WORKLOAD_IDENTITY_PROVIDER:
         required: true
 
@@ -43,10 +41,9 @@ jobs:
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           image_suffix: ${{ inputs.environment }}
-      - uses: nais/deploy/actions/deploy@master
+      - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: ${{ inputs.cluster }}
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           RESOURCE: .nais/config.yml
           VAR: image=${{ steps.docker-push.outputs.image }}
           VARS: .nais/${{ inputs.vars_file }}

@@ -15,5 +15,4 @@ jobs:
       cluster: prod-gcp
       vars_file: vars-prod.yml
     secrets:
-      NAIS_DEPLOY_APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
       NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}

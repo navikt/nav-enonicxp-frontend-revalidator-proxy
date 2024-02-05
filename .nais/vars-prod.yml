@@ -5,7 +5,6 @@ ingresses:
   - https://www.nav.no/revalidator-proxy
   - https://nav-enonicxp-frontend-revalidator-proxy.intern.nav.no
 secret: nav-enonicxp
-appPath: /revalidator-proxy
 resources:
   limits:
     memory: 1024Mi

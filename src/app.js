@@ -13,8 +13,6 @@ const app = express();
 
 const jsonBodyParser = express.json();
 
-// Ensure backwards compatibility while transitioning to a new ingress in prod
-
 app.post(
     '/revalidator-proxy',
     authMiddleware,

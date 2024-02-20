@@ -24,6 +24,9 @@ spec:
       value: /tmp/npm-cache
   envFrom:
     - secret: {{secret}}
+  redis:
+    - instance: pagecache
+      access: write
   accessPolicy:
     inbound:
       rules:

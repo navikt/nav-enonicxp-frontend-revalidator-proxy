@@ -1,6 +1,6 @@
 {
-  "name": "nav-enonicxp-frontend-revalidator-proxy",
-  "version": "1.0.4-prod",
+  "name": "nav-enonicxp-frontend-cache-invalidator",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "node src/app.js",
@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "dotenv": "16.4.5",
-    "nodemon": "3.0.2",
+    "nodemon": "3.0.3",
     "prettier": "3.2.5"
   }
 }

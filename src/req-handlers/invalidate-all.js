@@ -1,7 +1,10 @@
 const { callClients } = require('../clients');
+const { redisCache } = require('../redis');
 
-const invalidateAllHandler = (req, res) => {
+const invalidateAllHandler = async (req, res) => {
     const { eventid } = req.headers;
+
+    await redisCache.clear();
 
     callClients('/invalidate/wipe-all', eventid);
 

@@ -37,12 +37,23 @@ class RedisCache {
         });
     }
 
-    async delete(key, prefix) {
-        const prefixedKey = this.getPrefixedKey(key, prefix);
-        console.log(`Deleting redis cache entry for ${prefixedKey}`);
+    async delete(paths, prefixes) {
+        if (paths.length === 0 || prefixes.length === 0) {
+            return;
+        }
 
-        return this.client.del(prefixedKey).catch((e) => {
-            console.error(`Error deleting value for key ${key} - ${e}`);
+        const keysToDelete = paths.flatMap((path) =>
+            prefixes.map((prefix) => this.getPrefixedKey(path, prefix))
+        );
+
+        const keysToDeleteStr = keysToDelete.join(', ');
+
+        console.log(`Deleting values for keys ${keysToDeleteStr}`);
+
+        return this.client.del(keysToDelete).catch((e) => {
+            console.error(
+                `Error deleting values from Redis for keys ${keysToDeleteStr} - ${e}`
+            );
             return 0;
         });
     }
@@ -56,8 +67,8 @@ class RedisCache {
         });
     }
 
-    getPrefixedKey(key, prefix) {
-        return `${prefix}:${key}`;
+    getPrefixedKey(path, keyPrefix) {
+        return `${keyPrefix}:${path}`;
     }
 }
 

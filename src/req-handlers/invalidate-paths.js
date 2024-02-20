@@ -1,4 +1,5 @@
-const { callClients } = require('../clients');
+const { callClients, getUniqueRedisPrefixes } = require('../clients');
+const { redisCache } = require('../redis');
 
 // Revalidate requests from Enonic XP are sent independently by every node in the server cluster.
 // Each request has an associated eventid, which corresponds to a publishing event. This id is identical across all
@@ -30,7 +31,7 @@ const updateEventStatus = (eventid) => {
     return false;
 };
 
-const invalidatePathsHandler = (req, res) => {
+const invalidatePathsHandler = async (req, res) => {
     const { eventid } = req.headers;
     const { paths } = req.body;
 
@@ -48,6 +49,8 @@ const invalidatePathsHandler = (req, res) => {
         console.log(msg);
         return res.status(200).send(msg);
     }
+
+    await redisCache.delete(paths, getUniqueRedisPrefixes());
 
     callClients('/invalidate', eventid, {
         method: 'POST',

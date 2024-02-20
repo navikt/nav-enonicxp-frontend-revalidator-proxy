@@ -49,4 +49,10 @@ const callClients = (path, eventid, options = {}) => {
     });
 };
 
-module.exports = { callClients, updateClient };
+const getUniqueRedisPrefixes = () => {
+    return Object.values(clientData)
+        .flatMap((data) => data.redisPrefixes)
+        .filter((prefix, index, array) => array.indexOf(prefix) !== index);
+};
+
+module.exports = { callClients, updateClient, getUniqueRedisPrefixes };

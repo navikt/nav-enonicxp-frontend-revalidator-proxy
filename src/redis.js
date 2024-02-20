@@ -7,7 +7,7 @@ const clientOptions = {
     socket: { keepAlive: 5000, connectTimeout: 10000 },
 };
 
-export class RedisCache {
+class RedisCache {
     client;
 
     constructor() {
@@ -60,3 +60,5 @@ export class RedisCache {
         return `${prefix}:${key}`;
     }
 }
+
+module.exports = { redisCache: new RedisCache() };

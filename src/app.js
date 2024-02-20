@@ -7,6 +7,7 @@ const {
     updateCacheKeyMiddleware,
     getCacheKeyHandler,
 } = require('./req-handlers/cache-key');
+const { redisCache } = require('./redis');
 
 const appPort = 3002;
 const app = express();
@@ -40,12 +41,14 @@ app.get('/internal/isReady', (req, res) => {
     return res.status(200).send("I'm ready!");
 });
 
-const server = app.listen(appPort, () => {
+const server = app.listen(appPort, async () => {
     if (!process.env.SERVICE_SECRET) {
         const msg = 'Authentication key is not defined - shutting down';
         console.error(msg);
         throw new Error(msg);
     }
+
+    await redisCache.init();
 
     console.log(`Server starting on port ${appPort}`);
 });

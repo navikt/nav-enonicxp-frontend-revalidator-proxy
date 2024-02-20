@@ -1,16 +1,22 @@
 {
-  "name": "nav-enonicxp-frontend-revalidator-proxy",
-  "version": "1.0.4-prod",
+  "name": "nav-enonicxp-frontend-cache-invalidator",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./src/app.js",
-    "dev": "SERVICE_SECRET=dummyToken node ./src/app.js"
+    "start": "node src/app.js",
+    "dev": "nodemon -r dotenv/config src/app.js -w src"
+  },
+  "nodemonConfig": {
+    "delay": 500
   },
   "dependencies": {
     "express": "4.18.2",
+    "redis": "4.6.13",
     "uuid": "9.0.1"
   },
   "devDependencies": {
+    "dotenv": "16.4.5",
+    "nodemon": "3.0.3",
     "prettier": "3.2.5"
   }
 }

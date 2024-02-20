@@ -1,4 +1,5 @@
 const { createClient } = require('redis');
+const { getUniqueRedisPrefixes } = require('./clients');
 
 const clientOptions = {
     url: process.env.REDIS_URI_PAGECACHE,
@@ -37,7 +38,9 @@ class RedisCache {
         });
     }
 
-    async delete(paths, prefixes) {
+    async delete(paths) {
+        const prefixes = getUniqueRedisPrefixes();
+
         if (paths.length === 0 || prefixes.length === 0) {
             return;
         }

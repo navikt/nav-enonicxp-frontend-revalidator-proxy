@@ -50,7 +50,7 @@ const invalidatePathsHandler = async (req, res) => {
         return res.status(200).send(msg);
     }
 
-    await redisCache.delete(paths, getUniqueRedisPrefixes());
+    await redisCache.delete(paths);
 
     callClients('/invalidate', eventid, {
         method: 'POST',

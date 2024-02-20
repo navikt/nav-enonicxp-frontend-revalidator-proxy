@@ -1,1 +1,20 @@
-App som videresender kall for revalidering av innhold fra [Enonic XP](https://github.com/navikt/nav-enonicxp) CMS'et til alle podder for [nav-enonicxp-frontend](https://github.com/navikt/nav-enonicxp-frontend). 
+# nav.no frontend cache invalidator
+
+## Om appen
+
+Denne appen kalles av [nav-enonicxp](https://github.com/navikt/nav-enonicxp) ved behov for invalidering av cachen til [nav-enonicxp-frontend](https://github.com/navikt/nav-enonicxp-frontend).
+
+Appen har to oppgaver:
+- Invaliderer Redis-cachen til nav-enonicxp-frontend.
+- Videresender kall til alle podder for nav-enonicxp-frontend, slik at disse kan invalidere sin lokale cache. 
+
+## Utvikling
+Kopier `.env-template` til `.env` og kjør `npm run dev`. Legg inn Redis-credentials i `.env` ved behov.
+
+## Henvendelser
+
+Spørsmål knyttet til koden eller prosjektet kan rettes mot https://github.com/orgs/navikt/teams/personbruker
+
+### For NAV-ansatte
+
+Interne henvendelser kan sendes via Slack i kanalen #team-personbruker

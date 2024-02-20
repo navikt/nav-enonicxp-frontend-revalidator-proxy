@@ -12,7 +12,7 @@ const updateClient = (address, redisPrefixes) => {
 
     clientData[address] = {
         lastHeartbeat: Date.now(),
-        redisPrefixes: (redisPrefixes || '').split(','),
+        redisPrefixes: redisPrefixes ? redisPrefixes.split(',') : [],
     };
 };
 
@@ -52,7 +52,7 @@ const callClients = (path, eventid, options = {}) => {
 const getUniqueRedisPrefixes = () => {
     return Object.values(clientData)
         .flatMap((data) => data.redisPrefixes)
-        .filter((prefix, index, array) => array.indexOf(prefix) !== index);
+        .filter((prefix, index, array) => array.indexOf(prefix) === index);
 };
 
 module.exports = { callClients, updateClient, getUniqueRedisPrefixes };

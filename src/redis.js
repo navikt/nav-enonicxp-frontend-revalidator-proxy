@@ -43,7 +43,7 @@ class RedisCache {
         }
 
         const keysToDelete = paths.flatMap((path) =>
-            prefixes.map((prefix) => this.getPrefixedKey(path, prefix))
+            prefixes.map((prefix) => this.getKey(path, prefix))
         );
 
         const keysToDeleteStr = keysToDelete.join(', ');
@@ -67,8 +67,8 @@ class RedisCache {
         });
     }
 
-    getPrefixedKey(path, keyPrefix) {
-        return `${keyPrefix}:${path}`;
+    getKey(path, keyPrefix) {
+        return `${keyPrefix}:${path === '/' ? '/index' : path}`;
     }
 }
 

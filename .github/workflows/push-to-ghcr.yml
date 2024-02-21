@@ -1,4 +1,4 @@
-name: Build and deploy
+name: Push to GHCR
 on:
   workflow_dispatch:
     inputs:

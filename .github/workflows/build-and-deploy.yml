@@ -20,7 +20,7 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build docker image and deploy to nais k8s
+    name: Build and deploy to nais k8s
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     permissions:

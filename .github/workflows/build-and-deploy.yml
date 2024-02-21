@@ -11,21 +11,18 @@ on:
       vars_file:
         required: true
         type: string
+      push_latest:
+        required: false
+        type: boolean
     secrets:
       NAIS_WORKLOAD_IDENTITY_PROVIDER:
         required: true
-    outputs:
-      image:
-        description: "Docker image tag"
-        value: ${{ jobs.build-and-deploy.outputs.image }}
 
 jobs:
   build-and-deploy:
     name: Build docker image and deploy to nais k8s
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-    outputs:
-      image: ${{ steps.docker-push.outputs.image }}
     permissions:
       contents: "read"
       id-token: "write"
@@ -47,6 +44,7 @@ jobs:
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           image_suffix: ${{ inputs.environment }}
+          tag: ${{ inputs.push_latest && 'latest' || '' }}
       - name: Deploy to nais
         uses: nais/deploy/actions/deploy@v2
         env:

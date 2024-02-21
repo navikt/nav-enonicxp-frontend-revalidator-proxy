@@ -14,13 +14,6 @@ jobs:
       environment: prod
       cluster: prod-gcp
       vars_file: vars-prod.yml
+      push_latest: true
     secrets:
       NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
-  push-to-ghcr:
-    uses: ./.github/workflows/push-to-ghcr.yml
-    needs: build-and-deploy
-    permissions:
-      contents: "read"
-      packages: "write"
-    with:
-      image: ${{ needs.build-and-deploy.outputs.image }}

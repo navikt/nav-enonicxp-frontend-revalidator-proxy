@@ -8,6 +8,9 @@ const clientOptions = {
     socket: { keepAlive: 5000, connectTimeout: 10000 },
 };
 
+const validateRedisClientOptions = () =>
+    !!(clientOptions.url && clientOptions.username && clientOptions.password);
+
 class RedisCache {
     client;
 
@@ -75,4 +78,16 @@ class RedisCache {
     }
 }
 
-module.exports = { redisCache: new RedisCache() };
+class RedisCacheDummy {
+    init() {}
+    delete() {}
+    clear() {}
+}
+
+module.exports = {
+    redisCache:
+        process.env.NO_REDIS === 'true'
+            ? new RedisCacheDummy()
+            : new RedisCache(),
+    validateRedisClientOptions,
+};

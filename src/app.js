@@ -7,7 +7,7 @@ const {
     updateCacheKeyMiddleware,
     getCacheKeyHandler,
 } = require('./req-handlers/cache-key');
-const { redisCache } = require('./redis');
+const { redisCache, validateRedisClientOptions } = require('./redis');
 
 const appPort = 3002;
 const app = express();
@@ -46,6 +46,15 @@ const server = app.listen(appPort, async () => {
         const msg = 'Authentication key is not defined - shutting down';
         console.error(msg);
         throw new Error(msg);
+    }
+
+    if (process.env.NO_REDIS !== 'true') {
+        const isValid = validateRedisClientOptions();
+        if (!isValid) {
+            const msg = 'Redis client options are not valid - shutting down';
+            console.error(msg);
+            throw new Error(msg);
+        }
     }
 
     await redisCache.init();

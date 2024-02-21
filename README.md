@@ -9,6 +9,7 @@ Appen har to oppgaver:
 - Videresender kall til alle podder for nav-enonicxp-frontend, slik at disse kan invalidere sin lokale cache. 
 
 ## Utvikling lokalt
+
 Kopier `.env-template` til `.env` og kjør `npm run dev`. Legg inn Redis-credentials i `.env` ved behov.
 
 ## Henvendelser

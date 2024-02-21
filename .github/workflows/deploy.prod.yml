@@ -16,3 +16,11 @@ jobs:
       vars_file: vars-prod.yml
     secrets:
       NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+  push-to-ghcr:
+    uses: ./.github/workflows/push-to-ghcr.yml
+    needs: build-and-deploy
+    permissions:
+      contents: "read"
+      packages: "write"
+    with:
+      image: ${{ needs.build-and-deploy.outputs.image }}

@@ -1,0 +1,34 @@
+name: Build and deploy
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Push to ghcr"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+
+jobs:
+  build-and-deploy:
+    name: Push image to Github registry
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Login to Github registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push Github registry
+        run: |
+          docker buildx imagetools create \
+            --tag ghcr.io/${{ github.repository }}:latest \
+            ${{ inputs.image }}

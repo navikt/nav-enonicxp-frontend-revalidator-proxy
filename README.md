@@ -8,7 +8,7 @@ Appen har to oppgaver:
 - Invaliderer Redis-cachen til nav-enonicxp-frontend.
 - Videresender kall til alle podder for nav-enonicxp-frontend, slik at disse kan invalidere sin lokale cache. 
 
-## Utvikling
+## Utvikling lokalt
 Kopier `.env-template` til `.env` og kjør `npm run dev`. Legg inn Redis-credentials i `.env` ved behov.
 
 ## Henvendelser

@@ -45,6 +45,7 @@ jobs:
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           image_suffix: ${{ inputs.environment }}
           tag: ${{ inputs.push_latest && 'latest' || '' }}
+#         Build for arm64 as well, as this app runs locally in a docker network alongside nav-enonicxp-frontend. Need to support arm64 developer machines.
           platforms: linux/amd64,linux/arm64
       - name: Deploy to nais
         uses: nais/deploy/actions/deploy@v2

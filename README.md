@@ -6,7 +6,9 @@ Denne appen kalles av [nav-enonicxp](https://github.com/navikt/nav-enonicxp) ved
 
 Appen har to oppgaver:
 - Invaliderer Redis-cachen til nav-enonicxp-frontend.
-- Videresender kall til alle podder for nav-enonicxp-frontend, slik at disse kan invalidere sin lokale cache. 
+- Videresender kall til alle podder for nav-enonicxp-frontend, slik at disse kan invalidere sin lokale cache.
+
+Se [Dokumentasjon av caching](https://github.com/navikt/nav-enonicxp/wiki/Caching) for fullstendig dokumentasjon av cache-systemet.
 
 ## Utvikling lokalt
 

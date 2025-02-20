@@ -2,7 +2,7 @@ const { createClient } = require('redis');
 const { getUniqueRedisPrefixes } = require('./clients');
 
 const clientOptions = {
-    url: process.env.VALKEY_URI_PAGECACHE,
+    url: process.env.REDIS_URI_PAGECACHE,
     username: process.env.VALKEY_USERNAME_PAGECACHE,
     password: process.env.VALKEY_PASSWORD_PAGECACHE,
     socket: { keepAlive: 5000, connectTimeout: 10000 },

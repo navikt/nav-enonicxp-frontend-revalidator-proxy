@@ -1,16 +1,15 @@
 name: Deploy to dev1
-on:
-  workflow_dispatch
+on: workflow_dispatch
 
 jobs:
-  build-and-deploy:
-    uses: ./.github/workflows/build-and-deploy.yml
-    permissions:
-      contents: "read"
-      id-token: "write"
-    with:
-      environment: dev1
-      cluster: dev-gcp
-      vars_file: vars-dev1.yml
-    secrets:
-      NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+    build-and-deploy:
+        uses: ./.github/workflows/build-and-deploy.yml
+        permissions:
+            contents: read
+            id-token: write
+        with:
+            environment: dev1
+            cluster: dev-gcp
+            vars_file: vars-dev1.yml
+        secrets:
+            NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}

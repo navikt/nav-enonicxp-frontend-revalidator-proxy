@@ -48,10 +48,10 @@ const server = app.listen(appPort, async () => {
         throw new Error(msg);
     }
 
-    if (process.env.NO_REDIS !== 'true') {
+    if (process.env.NO_VALKEY !== 'true') {
         const isValid = validateRedisClientOptions();
         if (!isValid) {
-            const msg = 'Redis client options are not valid - shutting down';
+            const msg = 'Valkey client options are not valid - shutting down';
             console.error(msg);
             throw new Error(msg);
         }

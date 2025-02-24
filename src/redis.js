@@ -3,8 +3,8 @@ const { getUniqueRedisPrefixes } = require('./clients');
 
 const clientOptions = {
     url: process.env.REDIS_URI_PAGECACHE,
-    username: process.env.REDIS_USERNAME_PAGECACHE,
-    password: process.env.REDIS_PASSWORD_PAGECACHE,
+    username: process.env.VALKEY_USERNAME_PAGECACHE,
+    password: process.env.VALKEY_PASSWORD_PAGECACHE,
     socket: { keepAlive: 5000, connectTimeout: 10000 },
 };
 
@@ -17,27 +17,27 @@ class RedisCache {
     constructor() {
         this.client = createClient(clientOptions)
             .on('connect', () => {
-                console.log('Redis client connected');
+                console.log('Valkey client connected');
             })
             .on('ready', () => {
-                console.log('Redis client ready');
+                console.log('Valkey client ready');
             })
             .on('end', () => {
-                console.log('Redis client connection closed');
+                console.log('Valkey client connection closed');
             })
             .on('reconnecting', () => {
-                console.log('Redis client reconnecting');
+                console.log('Valkey client reconnecting');
             })
             .on('error', (err) => {
-                console.error(`Redis client error: ${err}`);
+                console.error(`Valkey client error: ${err}`);
             });
 
-        console.log(`Created redis client with url ${clientOptions.url}`);
+        console.log(`Created Valkey client with url ${clientOptions.url}`);
     }
 
     async init() {
         return this.client.connect().then(() => {
-            console.log('Initialized redis client');
+            console.log('Initialized Valkey client');
         });
     }
 
@@ -58,14 +58,14 @@ class RedisCache {
 
         return this.client.del(keysToDelete).catch((e) => {
             console.error(
-                `Error deleting values from Redis for keys ${keysToDeleteStr} - ${e}`
+                `Error deleting values from Valkey for keys ${keysToDeleteStr} - ${e}`
             );
             return 0;
         });
     }
 
     async clear() {
-        console.log('Clearing redis cache!');
+        console.log('Clearing Valkey cache!');
 
         return this.client.flushDb().catch((e) => {
             console.error(`Error flushing database - ${e}`);
@@ -86,7 +86,7 @@ class RedisCacheDummy {
 
 module.exports = {
     redisCache:
-        process.env.NO_REDIS === 'true'
+        process.env.NO_VALKEY === 'true'
             ? new RedisCacheDummy()
             : new RedisCache(),
     validateRedisClientOptions,

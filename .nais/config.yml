@@ -39,13 +39,13 @@ spec:
     inbound:
       rules:
         - application: {{frontendApp}}
-          namespace: "personbruker"
+          namespace: "navno"
         - application: {{frontendFailover}}
-          namespace: "personbruker"
+          namespace: "navno"
     outbound:
       rules:
         - application: {{frontendApp}}
-          namespace: "personbruker"
+          namespace: "navno"
   replicas:
     min: 1
     max: 1

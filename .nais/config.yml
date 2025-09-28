@@ -3,9 +3,9 @@ apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
   name: {{appName}}
-  namespace: personbruker
+  namespace: navno
   labels:
-    team: personbruker
+    team: navno
 spec:
   image: {{image}}
   port: 3002
@@ -39,10 +39,13 @@ spec:
     inbound:
       rules:
         - application: {{frontendApp}}
+          namespace: "navno"
         - application: {{frontendFailover}}
+          namespace: "navno"
     outbound:
       rules:
         - application: {{frontendApp}}
+          namespace: "navno"
   replicas:
     min: 1
     max: 1

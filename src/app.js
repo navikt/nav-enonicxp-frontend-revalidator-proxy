@@ -41,7 +41,12 @@ app.get('/internal/isReady', (req, res) => {
     return res.status(200).send("I'm ready!");
 });
 
-const server = app.listen(appPort, async () => {
+const server = app.listen(appPort, async (error) => {
+    if (error) {
+        console.error('Failed to start server:', error);
+        throw error;
+    }
+
     if (!process.env.SERVICE_SECRET) {
         const msg = 'Authentication key is not defined - shutting down';
         console.error(msg);

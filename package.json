@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "express": "4.22.1",
-    "redis": "4.7.0",
-    "uuid": "10.0.0"
+    "redis": "5.10.0",
+    "uuid": "13.0.0"
   },
   "devDependencies": {
     "dotenv": "16.4.5",

@@ -10,9 +10,9 @@
     "delay": 500
   },
   "dependencies": {
-    "express": "4.21.2",
-    "redis": "4.7.0",
-    "uuid": "10.0.0"
+    "express": "4.22.1",
+    "redis": "5.10.0",
+    "uuid": "13.0.0"
   },
   "devDependencies": {
     "dotenv": "17.2.3",

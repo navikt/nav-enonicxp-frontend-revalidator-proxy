@@ -6,14 +6,28 @@ Denne appen kalles av [nav-enonicxp](https://github.com/navikt/nav-enonicxp) ved
 
 Appen har to oppgaver:
 
--   Invaliderer Valkey-cachen til nav-enonicxp-frontend.
--   Videresender kall til alle podder for nav-enonicxp-frontend, slik at disse kan invalidere sin lokale cache.
+- Invaliderer Valkey-cachen til nav-enonicxp-frontend.
+- Videresender kall til alle podder for nav-enonicxp-frontend, slik at disse kan invalidere sin lokale cache.
 
 Se [Dokumentasjon av caching](https://github.com/navikt/nav-enonicxp/wiki/Caching) for fullstendig dokumentasjon av cache-systemet.
 
 ## Utvikling lokalt
 
-Kopier `.env-template` til `.env` og kjør `npm run dev`. Legg inn Valkey-credentials i `.env` ved behov.
+### Installere pnpm
+
+Dette prosjektet bruker **pnpm** som package manager. Node.js kommer med Corepack som automatisk bruker riktig pnpm-versjon:
+
+```bash
+corepack enable
+```
+
+Corepack leser `packageManager`-feltet i `package.json` og installerer riktig versjon automatisk.<<>>
+
+**Merk:** Når Corepack er aktivert, vil `npm`-kommandoer ikke fungere.
+
+### Starte lokalt
+
+Kopier `.env-template` til `.env` og kjør `pnpm dev`. Legg inn Valkey-credentials i `.env` ved behov.
 
 ## Henvendelser
 

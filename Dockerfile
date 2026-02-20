@@ -7,4 +7,4 @@ COPY node_modules /app/node_modules/
 COPY src /app/src/
 
 EXPOSE 3002
-CMD ["npm", "start"]
+CMD ["node", "src/app.js"]

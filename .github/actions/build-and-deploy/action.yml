@@ -47,17 +47,6 @@ runs:
       shell: bash
       run: pnpm install --frozen-lockfile --prod
 
-    - name: Compute docker tag
-      shell: bash
-      env:
-        PUSH_LATEST: ${{ inputs.push_latest }}
-      run: |
-        if [ "$PUSH_LATEST" = "true" ]; then
-          echo "DOCKER_TAG=latest" >> "$GITHUB_ENV"
-        else
-          echo "DOCKER_TAG=" >> "$GITHUB_ENV"
-        fi
-
     - name: Build and push docker image
       uses: nais/docker-build-push@v0
       id: docker-push

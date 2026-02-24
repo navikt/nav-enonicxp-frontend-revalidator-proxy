@@ -2,14 +2,22 @@ name: Deploy to dev1
 on: workflow_dispatch
 
 jobs:
-    build-and-deploy:
-        uses: ./.github/workflows/build-and-deploy.yml
-        permissions:
-            contents: read
-            id-token: write
+  build-and-deploy:
+    name: Build and deploy to dev1
+    runs-on: ubuntu-latest
+    environment: dev1
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Build and deploy to dev1
+        uses: ./.github/actions/build-and-deploy
         with:
-            environment: dev1
-            cluster: dev-gcp
-            vars_file: vars-dev1.yml
-        secrets:
-            NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          environment: dev1
+          cluster: dev-gcp
+          vars_file: vars-dev1.yml
+        env:
+          NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}

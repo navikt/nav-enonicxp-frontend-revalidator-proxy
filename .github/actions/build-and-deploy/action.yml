@@ -49,8 +49,10 @@ runs:
 
     - name: Compute docker tag
       shell: bash
+      env:
+        PUSH_LATEST: ${{ inputs.push_latest }}
       run: |
-        if [ "${{ inputs.push_latest }}" = "true" ]; then
+        if [ "$PUSH_LATEST" = "true" ]; then
           echo "DOCKER_TAG=latest" >> "$GITHUB_ENV"
         else
           echo "DOCKER_TAG=" >> "$GITHUB_ENV"

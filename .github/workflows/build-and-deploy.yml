@@ -1,62 +1,38 @@
 name: Build and deploy
 on:
-    workflow_call:
-        inputs:
-            environment:
-                required: true
-                type: string
-            cluster:
-                required: true
-                type: string
-            vars_file:
-                required: true
-                type: string
-            push_latest:
-                required: false
-                type: boolean
-        secrets:
-            NAIS_WORKLOAD_IDENTITY_PROVIDER:
-                required: true
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      cluster:
+        required: true
+        type: string
+      vars_file:
+        required: true
+        type: string
+      push_latest:
+        required: false
+        type: boolean
+    secrets:
+      NAIS_WORKLOAD_IDENTITY_PROVIDER:
+        required: true
 
 jobs:
-    build-and-deploy:
-        name: Build and deploy to nais k8s
-        runs-on: ubuntu-latest
-        environment: ${{ inputs.environment }}
-        permissions:
-            contents: read
-            id-token: write
-        steps:
-            - name: Checkout repo
-              uses: actions/checkout@v6
-            - name: Install pnpm
-              uses: pnpm/action-setup@v4
-            - name: Setup node.js
-              uses: actions/setup-node@v6
-              with:
-                  node-version: 24
-                  cache: 'pnpm'
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-            - name: Delete node_modules to avoid copying them into the docker image
-              run: rm -rf node_modules
-            - name: Install production dependencies
-              run: pnpm install --frozen-lockfile --prod
-            - name: Build and push docker image
-              uses: nais/docker-build-push@v0
-              id: docker-push
-              with:
-                  team: navno
-                  project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
-                  identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
-                  image_suffix: ${{ inputs.environment }}
-                  tag: ${{ inputs.push_latest && 'latest' || '' }}
-                  #         Build for arm64 as well, as this app runs locally in a docker network alongside nav-enonicxp-frontend. Need to support arm64 developer machines.
-                  platforms: linux/amd64,linux/arm64
-            - name: Deploy to nais
-              uses: nais/deploy/actions/deploy@v2
-              env:
-                  CLUSTER: ${{ inputs.cluster }}
-                  RESOURCE: .nais/config.yml
-                  VAR: image=${{ steps.docker-push.outputs.image }}
-                  VARS: .nais/${{ inputs.vars_file }}
+  build-and-deploy:
+    name: Build and deploy to nais k8s
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: ./.github/actions/build-and-deploy
+        with:
+          environment: ${{ inputs.environment }}
+          cluster: ${{ inputs.cluster }}
+          vars_file: ${{ inputs.vars_file }}
+          push_latest: ${{ inputs.push_latest }}
+        env:
+          NAIS_MANAGEMENT_PROJECT_ID: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+          NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}

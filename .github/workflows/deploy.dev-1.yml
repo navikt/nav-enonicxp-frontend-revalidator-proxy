@@ -3,7 +3,6 @@ on: workflow_dispatch
 
 jobs:
   build-and-deploy:
-    name: Build and deploy to dev1
     runs-on: ubuntu-latest
     environment: dev1
     permissions:

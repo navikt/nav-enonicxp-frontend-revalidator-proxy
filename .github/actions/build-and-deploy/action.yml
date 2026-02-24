@@ -1,0 +1,68 @@
+name: Build, push and deploy
+
+inputs:
+  environment:
+    required: true
+    description: Environment name (used for image suffix)
+  cluster:
+    required: true
+    description: NAIS cluster name
+  vars_file:
+    required: true
+    description: Vars file under .nais/ (for example vars-dev.yml)
+  push_latest:
+    required: false
+    default: "false"
+    description: If true, also tag/push image as latest
+
+outputs:
+  image:
+    description: Built image reference
+    value: ${{ steps.docker-push.outputs.image }}
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout repo
+      uses: actions/checkout@v6
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: Setup node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Delete node_modules to avoid copying them into the docker image
+      shell: bash
+      run: rm -rf node_modules
+
+    - name: Install production dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile --prod
+
+    - name: Build and push docker image
+      uses: nais/docker-build-push@v0
+      id: docker-push
+      with:
+        team: navno
+        project_id: ${{ env.NAIS_MANAGEMENT_PROJECT_ID }}
+        identity_provider: ${{ env.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+        image_suffix: ${{ inputs.environment }}
+        tag: ${{ inputs.push_latest && 'latest' || '' }}
+        #Build for arm64 as well, as this app runs locally in a docker network alongside nav-enonicxp-frontend. Need to support arm64 developer machines.
+        platforms: linux/amd64,linux/arm64
+
+    - name: Deploy to nais
+      uses: nais/deploy/actions/deploy@v2
+      env:
+        CLUSTER: ${{ inputs.cluster }}
+        RESOURCE: .nais/config.yml
+        VAR: image=${{ steps.docker-push.outputs.image }}
+        VARS: .nais/${{ inputs.vars_file }}

@@ -6,7 +6,6 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build and deploy to prod
     runs-on: ubuntu-latest
     environment: prod
     permissions:

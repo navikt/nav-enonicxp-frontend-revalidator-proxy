@@ -2,3 +2,5 @@
 /.idea/
 /nav-enonicxp-frontend-revalidator-proxy.iml
 .env
+
+package-lock.json

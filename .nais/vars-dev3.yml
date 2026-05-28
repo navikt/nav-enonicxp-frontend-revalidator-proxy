@@ -1,0 +1,12 @@
+appName: nav-enonicxp-frontend-revalidator-proxy-dev3
+frontendApp: nav-enonicxp-frontend-dev3
+frontendFailover: nav-enonicxp-frontend-dev3-failover
+ingresses:
+  - https://nav-enonicxp-frontend-revalidator-proxy-3.intern.dev.nav.no
+secret: nav-enonicxp-dev3
+resources:
+  limits:
+    memory: 1024Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi

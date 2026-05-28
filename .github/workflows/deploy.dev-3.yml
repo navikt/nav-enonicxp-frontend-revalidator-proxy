@@ -1,0 +1,22 @@
+name: Deploy to dev3
+on: workflow_dispatch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: dev3
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Build and deploy to dev3
+        uses: ./.github/actions/build-and-deploy
+        with:
+          environment: dev3
+          cluster: dev-gcp
+          vars_file: vars-dev3.yml
+        env:
+          NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}

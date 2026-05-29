@@ -1,5 +1,5 @@
 name: Build, push and deploy
-
+description: Build and push docker image, then deploy to NAIS cluster
 inputs:
   environment:
     required: true

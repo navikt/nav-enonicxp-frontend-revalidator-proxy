@@ -1,5 +1,6 @@
 const { createClient } = require('redis');
 const { getUniqueRedisPrefixes } = require('./clients');
+const { logger } = require('./logger');
 
 const clientOptions = {
     url: process.env.REDIS_URI_PAGECACHE,
@@ -17,27 +18,27 @@ class RedisCache {
     constructor() {
         this.client = createClient(clientOptions)
             .on('connect', () => {
-                console.log('Valkey client connected');
+                logger.info('Valkey client connected');
             })
             .on('ready', () => {
-                console.log('Valkey client ready');
+                logger.info('Valkey client ready');
             })
             .on('end', () => {
-                console.log('Valkey client connection closed');
+                logger.warn('Valkey client connection closed');
             })
             .on('reconnecting', () => {
-                console.log('Valkey client reconnecting');
+                logger.warn('Valkey client reconnecting');
             })
             .on('error', (err) => {
-                console.error(`Valkey client error: ${err}`);
+                logger.error({ err }, 'Valkey client error');
             });
 
-        console.log(`Created Valkey client with url ${clientOptions.url}`);
+        logger.info({ url: clientOptions.url }, 'Created Valkey client');
     }
 
     async init() {
         return this.client.connect().then(() => {
-            console.log('Initialized Valkey client');
+            logger.info('Initialized Valkey client');
         });
     }
 
@@ -52,23 +53,19 @@ class RedisCache {
             prefixes.map((prefix) => this.getKey(path, prefix))
         );
 
-        const keysToDeleteStr = keysToDelete.join(', ');
-
-        console.log(`Deleting values for keys ${keysToDeleteStr}`);
+        logger.info({ keys: keysToDelete }, 'Deleting Valkey keys');
 
         return this.client.del(keysToDelete).catch((e) => {
-            console.error(
-                `Error deleting values from Valkey for keys ${keysToDeleteStr} - ${e}`
-            );
+            logger.error({ keys: keysToDelete, err: e }, 'Valkey delete failed');
             return 0;
         });
     }
 
     async clear() {
-        console.log('Clearing Valkey cache!');
+        logger.warn('Clearing entire Valkey cache');
 
         return this.client.flushDb().catch((e) => {
-            console.error(`Error flushing database - ${e}`);
+            logger.error({ err: e }, 'Valkey flush failed');
             return 'error';
         });
     }

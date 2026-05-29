@@ -1,5 +1,6 @@
 const { callClients } = require('../clients');
 const { redisCache } = require('../redis');
+const { logger } = require('../logger');
 
 const invalidateAllHandler = async (req, res) => {
     const { eventid } = req.headers;
@@ -8,10 +9,8 @@ const invalidateAllHandler = async (req, res) => {
 
     callClients('/invalidate/wipe-all', eventid);
 
-    const msg = `Sent wipe-all request to all clients for event ${eventid}`;
-    console.log(msg);
-
-    res.status(200).send(msg);
+    logger.info({ eventid }, 'Wipe-all sent to all clients');
+    res.status(200).send('Wipe-all request sent to all clients');
 };
 
 module.exports = { invalidateAllHandler };

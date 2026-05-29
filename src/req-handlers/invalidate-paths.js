@@ -1,5 +1,6 @@
-const { callClients, getUniqueRedisPrefixes } = require('../clients');
+const { callClients, clientData } = require('../clients');
 const { redisCache } = require('../redis');
+const { logger } = require('../logger');
 
 // Revalidate requests from Enonic XP are sent independently by every node in the server cluster.
 // Each request has an associated eventid, which corresponds to a publishing event. This id is identical across all
@@ -20,11 +21,11 @@ const updateEventStatus = (eventid) => {
         return true;
     }
 
-    console.log(`Adding entry for event ${eventid}`);
+    logger.debug({ eventid }, 'Event registered');
     eventStatus[eventid] = true;
 
     setTimeout(() => {
-        console.log(`Event ${eventid} expired`);
+        logger.debug({ eventid }, 'Event expired');
         delete eventStatus[eventid];
     }, eventTimeout);
 
@@ -36,7 +37,7 @@ const invalidatePathsHandler = async (req, res) => {
     const { paths } = req.body;
 
     if (!Array.isArray(paths)) {
-        console.error(`Bad request for event ${eventid}`);
+        logger.warn({ eventid }, 'Bad request: paths not an array');
         return res
             .status(400)
             .send('Body field "paths" is required and must be an array');
@@ -45,9 +46,8 @@ const invalidatePathsHandler = async (req, res) => {
     const eventWasProcessed = updateEventStatus(eventid);
 
     if (eventWasProcessed) {
-        const msg = `Event ${eventid} has already been processsed`;
-        console.log(msg);
-        return res.status(200).send(msg);
+        logger.debug({ eventid }, 'Event already processed');
+        return res.status(200).send('Event already processed');
     }
 
     await redisCache.delete(paths);
@@ -60,12 +60,11 @@ const invalidatePathsHandler = async (req, res) => {
         body: JSON.stringify({ paths }),
     });
 
-    const msg = `Sent invalidation request for event ${eventid} to all clients - Paths: ${paths.join(
-        ', '
-    )}`;
-    console.log(msg);
-
-    res.status(200).send(msg);
+    logger.info(
+        { eventid, paths, clientCount: Object.keys(clientData).length },
+        'Invalidation sent'
+    );
+    res.status(200).send('Invalidation request sent to all clients');
 };
 
 module.exports = { invalidatePathsHandler };

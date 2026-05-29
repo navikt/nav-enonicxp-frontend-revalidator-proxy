@@ -1,4 +1,5 @@
 const express = require('express');
+const pinoHttp = require('pino-http');
 const { heartbeatHandler } = require('./req-handlers/heartbeat');
 const { invalidatePathsHandler } = require('./req-handlers/invalidate-paths');
 const { invalidateAllHandler } = require('./req-handlers/invalidate-all');
@@ -8,9 +9,17 @@ const {
     getCacheKeyHandler,
 } = require('./req-handlers/cache-key');
 const { redisCache, validateRedisClientOptions } = require('./redis');
+const { logger } = require('./logger');
 
 const appPort = 3002;
 const app = express();
+
+app.use(
+    pinoHttp({
+        logger,
+        autoLogging: { ignore: (req) => req.url.startsWith('/internal/') },
+    })
+);
 
 const jsonBodyParser = express.json();
 
@@ -43,13 +52,13 @@ app.get('/internal/isReady', (req, res) => {
 
 const server = app.listen(appPort, async (error) => {
     if (error) {
-        console.error('Failed to start server:', error);
+        logger.fatal({ err: error }, 'Failed to start server');
         throw error;
     }
 
     if (!process.env.SERVICE_SECRET) {
         const msg = 'Authentication key is not defined - shutting down';
-        console.error(msg);
+        logger.fatal(msg);
         throw new Error(msg);
     }
 
@@ -57,21 +66,21 @@ const server = app.listen(appPort, async (error) => {
         const isValid = validateRedisClientOptions();
         if (!isValid) {
             const msg = 'Valkey client options are not valid - shutting down';
-            console.error(msg);
+            logger.error(msg);
             throw new Error(msg);
         }
     }
 
     await redisCache.init();
 
-    console.log(`Server starting on port ${appPort}`);
+    logger.info({ port: appPort }, 'Server starting');
 });
 
 const shutdown = () => {
-    console.log('Server shutting down');
+    logger.info('Server shutting down');
 
     server.close(() => {
-        console.log('Shutdown complete!');
+        logger.info('Shutdown complete');
         process.exit(0);
     });
 };

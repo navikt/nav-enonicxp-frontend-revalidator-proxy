@@ -1,4 +1,5 @@
 const { currentCacheKey } = require('./req-handlers/cache-key');
+const { logger } = require('./logger');
 
 const clientPort = 3000;
 const clientStaleTime = 10000;
@@ -7,7 +8,7 @@ const clientData = {};
 
 const updateClient = (address, redisPrefixes) => {
     if (!clientData[address]) {
-        console.log(`New client: ${address}`);
+        logger.info({ address }, 'New client registered');
     }
 
     clientData[address] = {
@@ -38,12 +39,10 @@ const callClients = (path, eventid, options = {}) => {
                     }
                 })
                 .catch((e) =>
-                    console.error(
-                        `Request to ${url} failed for event ${eventid} - ${e}`
-                    )
+                    logger.error({ url, eventid, err: e }, 'Client request failed')
                 );
         } else {
-            console.log(`Removing stale client: ${address}`);
+            logger.warn({ address }, 'Removing stale client');
             delete clientData[address];
         }
     });

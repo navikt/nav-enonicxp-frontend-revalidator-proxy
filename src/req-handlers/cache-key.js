@@ -1,4 +1,5 @@
 const { v4: uuid } = require('uuid');
+const { logger } = require('../logger');
 
 const currentCacheKey = {
     timestamp: 0,
@@ -10,8 +11,9 @@ const updateCacheKeyMiddleware = (req, res, next) => {
 
     currentCacheKey.timestamp = Date.now();
     currentCacheKey.key = uuid();
-    console.log(
-        `Updated cache timestamp/key ${currentCacheKey.timestamp}/${currentCacheKey.key} for event id ${eventid}`
+    logger.info(
+        { cacheKey: currentCacheKey.key, timestamp: currentCacheKey.timestamp, eventid },
+        'Cache key updated'
     );
 
     return next();

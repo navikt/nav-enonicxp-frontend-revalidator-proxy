@@ -54,4 +54,4 @@ const getUniqueRedisPrefixes = () => {
         .filter((prefix, index, array) => array.indexOf(prefix) === index);
 };
 
-module.exports = { callClients, updateClient, getUniqueRedisPrefixes };
+module.exports = { callClients, updateClient, getUniqueRedisPrefixes, clientData };

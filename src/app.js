@@ -17,7 +17,7 @@ const app = express();
 app.use(
     pinoHttp({
         logger,
-        autoLogging: { ignore: (req) => req.url.startsWith('/internal/') },
+        autoLogging: false,
     })
 );
 

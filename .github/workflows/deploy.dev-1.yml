@@ -10,7 +10,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build and deploy to dev1
         uses: ./.github/actions/build-and-deploy

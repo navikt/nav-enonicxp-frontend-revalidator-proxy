@@ -13,7 +13,7 @@
   "dependencies": {
     "express": "5.2.1",
     "redis": "5.12.1",
-    "uuid": "14.0.0"
+    "uuid": "14.0.1"
   },
   "devDependencies": {
     "dotenv": "17.4.2",

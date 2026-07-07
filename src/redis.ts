@@ -32,7 +32,7 @@ class RedisCache {
             .on('reconnecting', () => {
                 console.log('Valkey client reconnecting');
             })
-            .on('error', (err: unknown) => {
+            .on('error', (err) => {
                 console.error(`Valkey client error: ${err}`);
             });
 
@@ -60,7 +60,7 @@ class RedisCache {
 
         console.log(`Deleting values for keys ${keysToDeleteStr}`);
 
-        return this.client.del(keysToDelete).catch((e: unknown) => {
+        return this.client.del(keysToDelete).catch((e) => {
             console.error(
                 `Error deleting values from Valkey for keys ${keysToDeleteStr} - ${e}`
             );
@@ -71,7 +71,7 @@ class RedisCache {
     async clear(): Promise<string> {
         console.log('Clearing Valkey cache!');
 
-        return this.client.flushDb().catch((e: unknown) => {
+        return this.client.flushDb().catch((e) => {
             console.error(`Error flushing database - ${e}`);
             return 'error';
         });

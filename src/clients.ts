@@ -50,7 +50,7 @@ const callClients = (
                         throw new Error(`${res.status} - ${res.statusText}`);
                     }
                 })
-                .catch((e: unknown) =>
+                .catch((e) =>
                     console.error(
                         `Request to ${url} failed for event ${eventid} - ${e}`
                     )

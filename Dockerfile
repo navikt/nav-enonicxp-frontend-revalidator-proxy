@@ -4,8 +4,8 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY node_modules ./node_modules/
-COPY src ./src/
+COPY dist ./dist/
 
 EXPOSE 3002
 ENTRYPOINT ["node"]
-CMD ["src/app.js"]
+CMD ["dist/app.js"]

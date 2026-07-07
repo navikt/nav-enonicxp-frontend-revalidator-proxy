@@ -1,18 +1,22 @@
-const { createClient } = require('redis');
-const { getUniqueRedisPrefixes } = require('./clients');
+import { createClient } from 'redis';
+import { getUniqueRedisPrefixes } from './clients';
 
 const clientOptions = {
     url: process.env.REDIS_URI_PAGECACHE,
     username: process.env.VALKEY_USERNAME_PAGECACHE,
     password: process.env.VALKEY_PASSWORD_PAGECACHE,
-    socket: { keepAlive: 5000, connectTimeout: 10000 },
+    socket: {
+        keepAlive: true,
+        keepAliveInitialDelay: 5000,
+        connectTimeout: 10000,
+    },
 };
 
-const validateRedisClientOptions = () =>
+const validateRedisClientOptions = (): boolean =>
     !!(clientOptions.url && clientOptions.username && clientOptions.password);
 
 class RedisCache {
-    client;
+    private client;
 
     constructor() {
         this.client = createClient(clientOptions)
@@ -28,20 +32,20 @@ class RedisCache {
             .on('reconnecting', () => {
                 console.log('Valkey client reconnecting');
             })
-            .on('error', (err) => {
+            .on('error', (err: unknown) => {
                 console.error(`Valkey client error: ${err}`);
             });
 
         console.log(`Created Valkey client with url ${clientOptions.url}`);
     }
 
-    async init() {
+    async init(): Promise<void> {
         return this.client.connect().then(() => {
             console.log('Initialized Valkey client');
         });
     }
 
-    async delete(paths) {
+    async delete(paths: string[]): Promise<number | void> {
         const prefixes = getUniqueRedisPrefixes();
 
         if (paths.length === 0 || prefixes.length === 0) {
@@ -56,7 +60,7 @@ class RedisCache {
 
         console.log(`Deleting values for keys ${keysToDeleteStr}`);
 
-        return this.client.del(keysToDelete).catch((e) => {
+        return this.client.del(keysToDelete).catch((e: unknown) => {
             console.error(
                 `Error deleting values from Valkey for keys ${keysToDeleteStr} - ${e}`
             );
@@ -64,30 +68,35 @@ class RedisCache {
         });
     }
 
-    async clear() {
+    async clear(): Promise<string> {
         console.log('Clearing Valkey cache!');
 
-        return this.client.flushDb().catch((e) => {
+        return this.client.flushDb().catch((e: unknown) => {
             console.error(`Error flushing database - ${e}`);
             return 'error';
         });
     }
 
-    getKey(path, keyPrefix) {
+    private getKey(path: string, keyPrefix: string): string {
         return `${keyPrefix}:${path === '/' ? '/index' : path}`;
     }
 }
 
 class RedisCacheDummy {
-    init() {}
-    delete() {}
-    clear() {}
+    init(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    delete(_paths: string[]): Promise<void> {
+        return Promise.resolve();
+    }
+
+    clear(): Promise<'ok'> {
+        return Promise.resolve('ok');
+    }
 }
 
-module.exports = {
-    redisCache:
-        process.env.NO_VALKEY === 'true'
-            ? new RedisCacheDummy()
-            : new RedisCache(),
-    validateRedisClientOptions,
-};
+const redisCache: RedisCache | RedisCacheDummy =
+    process.env.NO_VALKEY === 'true' ? new RedisCacheDummy() : new RedisCache();
+
+export { redisCache, validateRedisClientOptions };

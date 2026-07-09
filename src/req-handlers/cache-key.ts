@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { v4 as uuid } from 'uuid';
+import { logger } from '../app';
 
 type CacheKey = {
     timestamp: number;
@@ -22,7 +23,7 @@ const updateCacheKeyMiddleware = (
 
     currentCacheKey.timestamp = Date.now();
     currentCacheKey.key = uuid();
-    console.log(
+    logger.info(
         `Updated cache timestamp/key ${currentCacheKey.timestamp}/${currentCacheKey.key} for event id ${eventid}`
     );
 

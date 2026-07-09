@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { callClients } from '../clients';
 import { redisCache } from '../redis';
+import { logger } from '../app';
 
 type InvalidatePathsBody = {
     paths?: unknown;
@@ -19,11 +20,11 @@ const updateEventStatus = (eventid?: string): boolean => {
         return true;
     }
 
-    console.log(`Adding entry for event ${eventid}`);
+    logger.info(`Adding entry for event ${eventid}`);
     eventStatus[eventid] = true;
 
     setTimeout(() => {
-        console.log(`Event ${eventid} expired`);
+        logger.info(`Event ${eventid} expired`);
         delete eventStatus[eventid];
     }, eventTimeout);
 
@@ -41,8 +42,10 @@ const invalidatePathsHandler = async (
     const { paths } = req.body;
 
     if (!Array.isArray(paths)) {
-        console.error(`Bad request for event ${safeEventid}`);
-        res.status(400).send('Body field "paths" is required and must be an array');
+        logger.error(`Bad request for event ${safeEventid}`);
+        res.status(400).send(
+            'Body field "paths" is required and must be an array'
+        );
         return;
     }
 
@@ -51,7 +54,7 @@ const invalidatePathsHandler = async (
 
     if (eventWasProcessed) {
         const msg = `Event ${safeEventid} has already been processsed`;
-        console.log(msg);
+        logger.info(msg);
         res.status(200).send(msg);
         return;
     }
@@ -69,7 +72,7 @@ const invalidatePathsHandler = async (
     const msg = `Sent invalidation request for event ${safeEventid} to all clients - Paths: ${typedPaths.join(
         ', '
     )}`;
-    console.log(msg);
+    logger.info(msg);
 
     res.status(200).send(msg);
 };

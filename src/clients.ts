@@ -1,4 +1,5 @@
 import { currentCacheKey } from './req-handlers/cache-key';
+import { logger } from './app';
 
 const clientPort = 3000;
 const clientStaleTime = 10000;
@@ -16,7 +17,7 @@ const clientData: Record<string, ClientData> = {};
 
 const updateClient = (address: string, redisPrefixes?: string): void => {
     if (!clientData[address]) {
-        console.log(`New client: ${address}`);
+        logger.info(`New client: ${address}`);
     }
 
     clientData[address] = {
@@ -51,12 +52,12 @@ const callClients = (
                     }
                 })
                 .catch((e) =>
-                    console.error(
+                    logger.error(
                         `Request to ${url} failed for event ${eventid} - ${e}`
                     )
                 );
         } else {
-            console.log(`Removing stale client: ${address}`);
+            logger.info(`Removing stale client: ${address}`);
             delete clientData[address];
         }
     });

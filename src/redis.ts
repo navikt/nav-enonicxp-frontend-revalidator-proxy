@@ -1,5 +1,6 @@
 import { createClient } from 'redis';
 import { getUniqueRedisPrefixes } from './clients';
+import { logger } from './app';
 
 const clientOptions = {
     url: process.env.REDIS_URI_PAGECACHE,
@@ -21,27 +22,27 @@ class RedisCache {
     constructor() {
         this.client = createClient(clientOptions)
             .on('connect', () => {
-                console.log('Valkey client connected');
+                logger.info('Valkey client connected');
             })
             .on('ready', () => {
-                console.log('Valkey client ready');
+                logger.info('Valkey client ready');
             })
             .on('end', () => {
-                console.log('Valkey client connection closed');
+                logger.info('Valkey client connection closed');
             })
             .on('reconnecting', () => {
-                console.log('Valkey client reconnecting');
+                logger.info('Valkey client reconnecting');
             })
             .on('error', (err) => {
-                console.error(`Valkey client error: ${err}`);
+                logger.error(`Valkey client error: ${err}`);
             });
 
-        console.log(`Created Valkey client with url ${clientOptions.url}`);
+        logger.info(`Created Valkey client with url ${clientOptions.url}`);
     }
 
     async init(): Promise<void> {
         return this.client.connect().then(() => {
-            console.log('Initialized Valkey client');
+            logger.info('Initialized Valkey client');
         });
     }
 
@@ -58,10 +59,10 @@ class RedisCache {
 
         const keysToDeleteStr = keysToDelete.join(', ');
 
-        console.log(`Deleting values for keys ${keysToDeleteStr}`);
+        logger.info(`Deleting values for keys ${keysToDeleteStr}`);
 
         return this.client.del(keysToDelete).catch((e) => {
-            console.error(
+            logger.error(
                 `Error deleting values from Valkey for keys ${keysToDeleteStr} - ${e}`
             );
             return 0;
@@ -69,10 +70,10 @@ class RedisCache {
     }
 
     async clear(): Promise<string> {
-        console.log('Clearing Valkey cache!');
+        logger.info('Clearing Valkey cache!');
 
         return this.client.flushDb().catch((e) => {
-            console.error(`Error flushing database - ${e}`);
+            logger.error(`Error flushing database - ${e}`);
             return 'error';
         });
     }

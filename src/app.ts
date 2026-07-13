@@ -65,7 +65,7 @@ const server = app.listen(appPort, async () => {
 
         logger.info(`Server starting on port ${appPort}`);
     } catch (error) {
-        logger.error('Failed to start server:', error);
+        logger.error(`Failed to start server: ${error}`);
         server.close(() => process.exit(1));
     }
 });

@@ -1,6 +1,6 @@
 import { createClient } from 'redis';
 import { getUniqueRedisPrefixes } from './clients';
-import { logger } from './app';
+import { logger } from './logger';
 
 const clientOptions = {
     url: process.env.REDIS_URI_PAGECACHE,
@@ -17,7 +17,7 @@ const validateRedisClientOptions = (): boolean =>
     !!(clientOptions.url && clientOptions.username && clientOptions.password);
 
 class RedisCache {
-    private client;
+    private client: ReturnType<typeof createClient>;
 
     constructor() {
         this.client = createClient(clientOptions)

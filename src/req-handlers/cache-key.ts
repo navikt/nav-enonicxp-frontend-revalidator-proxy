@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { v4 as uuid } from 'uuid';
-import { logger } from '../app';
+import { logger } from '../logger';
 
 type CacheKey = {
     timestamp: number;

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { callClients } from '../clients';
 import { redisCache } from '../redis';
-import { logger } from '../app';
+import { logger } from '../logger';
 
 type InvalidatePathsBody = {
     paths?: unknown;
@@ -53,7 +53,7 @@ const invalidatePathsHandler = async (
     const eventWasProcessed = updateEventStatus(safeEventid);
 
     if (eventWasProcessed) {
-        const msg = `Event ${safeEventid} has already been processsed`;
+        const msg = `Event ${safeEventid} has already been processed`;
         logger.info(msg);
         res.status(200).send(msg);
         return;

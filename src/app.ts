@@ -8,11 +8,10 @@ import { heartbeatHandler } from './req-handlers/heartbeat';
 import { invalidateAllHandler } from './req-handlers/invalidate-all';
 import { invalidatePathsHandler } from './req-handlers/invalidate-paths';
 import { redisCache, validateRedisClientOptions } from './redis';
-import pino from 'pino';
+import { logger } from './logger';
 
 const appPort = 3002;
 const app = express();
-export const logger = pino();
 
 const jsonBodyParser = express.json();
 

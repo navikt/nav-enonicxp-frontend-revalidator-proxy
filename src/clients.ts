@@ -1,5 +1,5 @@
 import { currentCacheKey } from './req-handlers/cache-key';
-import { logger } from './app';
+import { logger } from './logger';
 
 const clientPort = 3000;
 const clientStaleTime = 10000;

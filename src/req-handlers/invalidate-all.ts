@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { callClients } from '../clients';
 import { redisCache } from '../redis';
-import { logger } from '../app';
+import { logger } from '../logger';
 
 const invalidateAllHandler = async (
     req: Request,

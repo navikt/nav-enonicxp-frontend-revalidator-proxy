@@ -1,14 +1,23 @@
-const { currentCacheKey } = require('./req-handlers/cache-key');
-const { logger } = require('./logger');
+import { currentCacheKey } from './req-handlers/cache-key';
+import { logger } from './logger';
 
 const clientPort = 3000;
 const clientStaleTime = 10000;
 
-const clientData = {};
+type ClientData = {
+    lastHeartbeat: number;
+    redisPrefixes: string[];
+};
 
-const updateClient = (address, redisPrefixes) => {
+type FetchOptions = Omit<RequestInit, 'headers'> & {
+    headers?: Record<string, string>;
+};
+
+const clientData: Record<string, ClientData> = {};
+
+const updateClient = (address: string, redisPrefixes?: string): void => {
     if (!clientData[address]) {
-        logger.info({ address }, 'New client registered');
+        logger.info({ message: `New client: ${address}` });
     }
 
     clientData[address] = {
@@ -17,7 +26,11 @@ const updateClient = (address, redisPrefixes) => {
     };
 };
 
-const callClients = (path, eventid, options = {}) => {
+const callClients = (
+    path: string,
+    eventid?: string,
+    options: FetchOptions = {}
+): void => {
     Object.entries(clientData).forEach(([address, data]) => {
         const { lastHeartbeat } = data;
 
@@ -27,10 +40,10 @@ const callClients = (path, eventid, options = {}) => {
                 ...options,
                 headers: {
                     ...options.headers,
-                    eventid,
-                    secret: process.env.SERVICE_SECRET,
+                    eventid: eventid ?? '',
+                    secret: process.env.SERVICE_SECRET ?? '',
                     cache_key: currentCacheKey.key,
-                    cache_ts: currentCacheKey.timestamp,
+                    cache_ts: String(currentCacheKey.timestamp),
                 },
             })
                 .then((res) => {
@@ -39,19 +52,21 @@ const callClients = (path, eventid, options = {}) => {
                     }
                 })
                 .catch((e) =>
-                    logger.error({ url, eventid, err: e }, 'Client request failed')
+                    logger.error({
+                        message: `Request to ${url} failed for event ${eventid} - ${e}`,
+                    })
                 );
         } else {
-            logger.warn({ address }, 'Removing stale client');
+            logger.info({ message: `Removing stale client: ${address}` });
             delete clientData[address];
         }
     });
 };
 
-const getUniqueRedisPrefixes = () => {
+const getUniqueRedisPrefixes = (): string[] => {
     return Object.values(clientData)
         .flatMap((data) => data.redisPrefixes)
         .filter((prefix, index, array) => array.indexOf(prefix) === index);
 };
 
-module.exports = { callClients, updateClient, getUniqueRedisPrefixes, clientData };
+export { callClients, updateClient, getUniqueRedisPrefixes };

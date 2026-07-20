@@ -23,9 +23,9 @@ const updateCacheKeyMiddleware = (
 
     currentCacheKey.timestamp = Date.now();
     currentCacheKey.key = uuid();
-    logger.info(
-        `Updated cache timestamp/key ${currentCacheKey.timestamp}/${currentCacheKey.key} for event id ${eventid}`
-    );
+    logger.info({
+        message: `Updated cache timestamp/key ${currentCacheKey.timestamp}/${currentCacheKey.key} for event id ${eventid}`,
+    });
 
     next();
 };

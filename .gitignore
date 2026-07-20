@@ -1,4 +1,5 @@
 /node_modules/
+/dist/
 /.idea/
 /nav-enonicxp-frontend-revalidator-proxy.iml
 .env

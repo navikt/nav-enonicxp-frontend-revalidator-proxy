@@ -20,11 +20,11 @@ const updateEventStatus = (eventid?: string): boolean => {
         return true;
     }
 
-    logger.info(`Adding entry for event ${eventid}`);
+    logger.info({ message: `Adding entry for event ${eventid}` });
     eventStatus[eventid] = true;
 
     setTimeout(() => {
-        logger.info(`Event ${eventid} expired`);
+        logger.info({ message: `Event ${eventid} expired` });
         delete eventStatus[eventid];
     }, eventTimeout);
 
@@ -42,7 +42,7 @@ const invalidatePathsHandler = async (
     const { paths } = req.body;
 
     if (!Array.isArray(paths)) {
-        logger.error(`Bad request for event ${safeEventid}`);
+        logger.error({ message: `Bad request for event ${safeEventid}` });
         res.status(400).send(
             'Body field "paths" is required and must be an array'
         );
@@ -54,7 +54,7 @@ const invalidatePathsHandler = async (
 
     if (eventWasProcessed) {
         const msg = `Event ${safeEventid} has already been processed`;
-        logger.info(msg);
+        logger.info({ message: msg });
         res.status(200).send(msg);
         return;
     }
@@ -72,7 +72,7 @@ const invalidatePathsHandler = async (
     const msg = `Sent invalidation request for event ${safeEventid} to all clients - Paths: ${typedPaths.join(
         ', '
     )}`;
-    logger.info(msg);
+    logger.info({ message: msg });
 
     res.status(200).send(msg);
 };

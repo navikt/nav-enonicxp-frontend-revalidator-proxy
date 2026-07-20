@@ -22,22 +22,24 @@ class RedisCache {
     constructor() {
         this.client = createClient(clientOptions)
             .on('connect', () => {
-                logger.info('Valkey client connected');
+                logger.info({ message: 'Valkey client connected' });
             })
             .on('ready', () => {
-                logger.info('Valkey client ready');
+                logger.info({ message: 'Valkey client ready' });
             })
             .on('end', () => {
-                logger.info('Valkey client connection closed');
+                logger.info({ message: 'Valkey client connection closed' });
             })
             .on('reconnecting', () => {
-                logger.info('Valkey client reconnecting');
+                logger.info({ message: 'Valkey client reconnecting' });
             })
             .on('error', (err) => {
-                logger.error(`Valkey client error: ${err}`);
+                logger.error({ message: `Valkey client error: ${err}` });
             });
 
-        logger.info(`Created Valkey client with url ${clientOptions.url}`);
+        logger.info({
+            message: `Created Valkey client with url ${clientOptions.url}`,
+        });
     }
 
     async init(): Promise<void> {
@@ -59,21 +61,21 @@ class RedisCache {
 
         const keysToDeleteStr = keysToDelete.join(', ');
 
-        logger.info(`Deleting values for keys ${keysToDeleteStr}`);
+        logger.info({ message: `Deleting values for keys ${keysToDeleteStr}` });
 
         return this.client.del(keysToDelete).catch((e) => {
-            logger.error(
-                `Error deleting values from Valkey for keys ${keysToDeleteStr} - ${e}`
-            );
+            logger.error({
+                message: `Error deleting values from Valkey for keys ${keysToDeleteStr} - ${e}`,
+            });
             return 0;
         });
     }
 
     async clear(): Promise<string> {
-        logger.info('Clearing Valkey cache!');
+        logger.info({ message: 'Clearing Valkey cache!' });
 
         return this.client.flushDb().catch((e) => {
-            logger.error(`Error flushing database - ${e}`);
+            logger.error({ message: `Error flushing database - ${e}` });
             return 'error';
         });
     }

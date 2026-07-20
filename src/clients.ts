@@ -17,7 +17,7 @@ const clientData: Record<string, ClientData> = {};
 
 const updateClient = (address: string, redisPrefixes?: string): void => {
     if (!clientData[address]) {
-        logger.info(`New client: ${address}`);
+        logger.info({ message: `New client: ${address}` });
     }
 
     clientData[address] = {
@@ -52,12 +52,12 @@ const callClients = (
                     }
                 })
                 .catch((e) =>
-                    logger.error(
-                        `Request to ${url} failed for event ${eventid} - ${e}`
-                    )
+                    logger.error({
+                        message: `Request to ${url} failed for event ${eventid} - ${e}`,
+                    })
                 );
         } else {
-            logger.info(`Removing stale client: ${address}`);
+            logger.info({ message: `Removing stale client: ${address}` });
             delete clientData[address];
         }
     });

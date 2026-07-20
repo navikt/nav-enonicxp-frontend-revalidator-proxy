@@ -17,26 +17,24 @@ const validateRedisClientOptions = (): boolean =>
     !!(clientOptions.url && clientOptions.username && clientOptions.password);
 
 class RedisCache {
-    private client: ReturnType<typeof createClient>;
+    private client = createClient(clientOptions)
+        .on('connect', () => {
+            logger.info({ message: 'Valkey client connected' });
+        })
+        .on('ready', () => {
+            logger.info({ message: 'Valkey client ready' });
+        })
+        .on('end', () => {
+            logger.info({ message: 'Valkey client connection closed' });
+        })
+        .on('reconnecting', () => {
+            logger.info({ message: 'Valkey client reconnecting' });
+        })
+        .on('error', (err) => {
+            logger.error({ message: `Valkey client error: ${err}` });
+        });
 
     constructor() {
-        this.client = createClient(clientOptions)
-            .on('connect', () => {
-                logger.info({ message: 'Valkey client connected' });
-            })
-            .on('ready', () => {
-                logger.info({ message: 'Valkey client ready' });
-            })
-            .on('end', () => {
-                logger.info({ message: 'Valkey client connection closed' });
-            })
-            .on('reconnecting', () => {
-                logger.info({ message: 'Valkey client reconnecting' });
-            })
-            .on('error', (err) => {
-                logger.error({ message: `Valkey client error: ${err}` });
-            });
-
         logger.info({
             message: `Created Valkey client with url ${clientOptions.url}`,
         });

@@ -6,6 +6,9 @@ const clientOptions = {
     url: process.env.REDIS_URI_PAGECACHE,
     username: process.env.VALKEY_USERNAME_PAGECACHE,
     password: process.env.VALKEY_PASSWORD_PAGECACHE,
+    // Send a periodic PING to keep idle connections alive. This is to avoid Valkey closing the connection, which
+    // happens in dev with low traffic.
+    pingInterval: 30000,
     socket: {
         keepAlive: true,
         keepAliveInitialDelay: 5000,

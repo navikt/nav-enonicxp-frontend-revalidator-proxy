@@ -23,6 +23,9 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: nodejs
+  azure:
+    application:
+      enabled: true
   ingresses:
   {{#each ingresses as |url|}}
     - {{url}}

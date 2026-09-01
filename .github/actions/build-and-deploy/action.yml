@@ -35,6 +35,8 @@ runs:
     - name: Install dependencies
       shell: bash
       run: pnpm install --frozen-lockfile
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.READER_TOKEN }}
 
     - name: Delete node_modules to avoid copying them into the docker image
       shell: bash
@@ -43,6 +45,8 @@ runs:
     - name: Install production dependencies
       shell: bash
       run: pnpm install --frozen-lockfile --prod
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.READER_TOKEN }}
 
     - name: Build and push docker image
       uses: nais/docker-build-push@v0

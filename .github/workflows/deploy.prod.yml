@@ -22,6 +22,7 @@ jobs:
           cluster: prod-gcp
           vars_file: vars-prod.yml
           push_latest: true
+          READER_TOKEN: ${{ secrets.READER_TOKEN }}
         env:
           NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
 

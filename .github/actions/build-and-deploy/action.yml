@@ -14,6 +14,9 @@ inputs:
     required: false
     default: "false"
     description: If true, also tag/push image as latest
+  READER_TOKEN:
+    required: true
+    description: GitHub token (PAT with read:packages) used to authenticate pnpm install against npm.pkg.github.com for private @navikt packages
 
 outputs:
   image:
@@ -37,6 +40,10 @@ runs:
       run: pnpm install --frozen-lockfile
       env:
         NODE_AUTH_TOKEN: ${{ inputs.READER_TOKEN }}
+
+    - name: Build application
+      shell: bash
+      run: pnpm build
 
     - name: Delete node_modules to avoid copying them into the docker image
       shell: bash

@@ -18,5 +18,6 @@ jobs:
           environment: dev1
           cluster: dev-gcp
           vars_file: vars-dev1.yml
+          READER_TOKEN: ${{ secrets.READER_TOKEN }}
         env:
           NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}

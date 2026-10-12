@@ -14,14 +14,14 @@
   },
   "dependencies": {
     "express": "5.2.1",
-    "pino": "10.3.1",
-    "redis": "6.2.1",
+    "pino": "10.4.0",
+    "redis": "6.3.0",
     "uuid": "14.0.2"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
     "@types/node": "24.6.1",
-    "dotenv": "18.0.1",
+    "dotenv": "18.0.5",
     "nodemon": "3.1.14",
     "prettier": "3.9.9",
     "typescript": "6.0.3"

@@ -14,18 +14,18 @@
   },
   "dependencies": {
     "@navikt/oasis": "^4.1.4",
-    "express": "5.2.1",
-    "pino": "10.3.1",
     "pino-http": "11.0.0",
-    "redis": "5.12.1",
-    "uuid": "14.0.1"
+    "express": "5.3.0",
+    "pino": "10.4.0",
+    "redis": "6.3.0",
+    "uuid": "14.0.3"
   },
   "devDependencies": {
-    "@types/express": "5.0.4",
+    "@types/express": "5.0.6",
     "@types/node": "24.6.1",
-    "dotenv": "17.4.2",
+    "dotenv": "18.0.7",
     "nodemon": "3.1.14",
-    "prettier": "3.9.5",
+    "prettier": "3.9.10",
     "typescript": "6.0.3"
   }
 }

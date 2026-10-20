@@ -6,6 +6,9 @@ const clientOptions = {
     url: process.env.REDIS_URI_PAGECACHE,
     username: process.env.VALKEY_USERNAME_PAGECACHE,
     password: process.env.VALKEY_PASSWORD_PAGECACHE,
+    // Send a periodic PING to keep idle connections alive. This is to avoid Valkey closing the connection, which
+    // happens in dev with low traffic.
+    pingInterval: 30000,
     socket: {
         keepAlive: true,
         keepAliveInitialDelay: 5000,
@@ -17,26 +20,24 @@ const validateRedisClientOptions = (): boolean =>
     !!(clientOptions.url && clientOptions.username && clientOptions.password);
 
 class RedisCache {
-    private client: ReturnType<typeof createClient>;
+    private client = createClient(clientOptions)
+        .on('connect', () => {
+            logger.info({ message: 'Valkey client connected' });
+        })
+        .on('ready', () => {
+            logger.info({ message: 'Valkey client ready' });
+        })
+        .on('end', () => {
+            logger.info({ message: 'Valkey client connection closed' });
+        })
+        .on('reconnecting', () => {
+            logger.info({ message: 'Valkey client reconnecting' });
+        })
+        .on('error', (err) => {
+            logger.error({ message: `Valkey client error: ${err}` });
+        });
 
     constructor() {
-        this.client = createClient(clientOptions)
-            .on('connect', () => {
-                logger.info({ message: 'Valkey client connected' });
-            })
-            .on('ready', () => {
-                logger.info({ message: 'Valkey client ready' });
-            })
-            .on('end', () => {
-                logger.info({ message: 'Valkey client connection closed' });
-            })
-            .on('reconnecting', () => {
-                logger.info({ message: 'Valkey client reconnecting' });
-            })
-            .on('error', (err) => {
-                logger.error({ message: `Valkey client error: ${err}` });
-            });
-
         logger.info({
             message: `Created Valkey client with url ${clientOptions.url}`,
         });

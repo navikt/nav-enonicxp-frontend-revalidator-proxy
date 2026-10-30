@@ -2,21 +2,23 @@ name: Deploy to dev2
 on: workflow_dispatch
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    environment: dev2
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v7
+  build:
+    uses: navikt/navno-ci/.github/workflows/node-build.yml@v1
+    permissions: { contents: read, id-token: write }
+    with:
+      github-environment: dev2
+      image-suffix: dev2
+      # Also built for arm64, as this app runs locally in a docker network alongside nav-enonicxp-frontend.
+      platforms: linux/amd64,linux/arm64
+    secrets: inherit
 
-      - name: Build and deploy to dev2
-        uses: ./.github/actions/build-and-deploy
-        with:
-          environment: dev2
-          cluster: dev-gcp
-          vars_file: vars-dev2.yml
-        env:
-          NAIS_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+  deploy:
+    needs: build
+    uses: navikt/navno-ci/.github/workflows/nais-deploy.yml@v1
+    permissions: { contents: read, id-token: write }
+    with:
+      environment: dev2
+      cluster: dev-gcp
+      resource: .nais/config.yml
+      vars: .nais/vars-dev2.yml
+      var: image=${{ needs.build.outputs.image }}

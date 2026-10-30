@@ -1,0 +1,32 @@
+# Builds main and deploys it to prod - shared by deploy.prod.yml and weekly-update.yml
+# Callers need `permissions: { contents: read, id-token: write }` and `secrets: inherit`.
+name: Build and deploy to prod
+on:
+  workflow_call:
+    outputs:
+      image:
+        description: Deployed image
+        value: ${{ jobs.build.outputs.image }}
+
+jobs:
+  build:
+    uses: navikt/navno-ci/.github/workflows/node-build.yml@v1
+    permissions: { contents: read, id-token: write }
+    with:
+      github-environment: prod
+      image-suffix: prod
+      image-tag: latest
+      # Also built for arm64, as this app runs locally in a docker network alongside nav-enonicxp-frontend.
+      platforms: linux/amd64,linux/arm64
+    secrets: inherit
+
+  deploy:
+    needs: build
+    uses: navikt/navno-ci/.github/workflows/nais-deploy.yml@v1
+    permissions: { contents: read, id-token: write }
+    with:
+      environment: prod
+      cluster: prod-gcp
+      resource: .nais/config.yml
+      vars: .nais/vars-prod.yml
+      var: image=${{ needs.build.outputs.image }}

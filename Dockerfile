@@ -2,17 +2,18 @@ FROM node:26-alpine AS build
 
 WORKDIR /app
 
-# Without lifecycle scripts the pnpm bin is a shebang-less stub that fails under QEMU (arm64 build)
-RUN npm install --global --ignore-scripts pnpm@12.18.0 \
-    && chmod +x /usr/local/lib/node_modules/pnpm/bin/pnpm.mjs \
-    && ln -sf /usr/local/lib/node_modules/pnpm/bin/pnpm.mjs /usr/local/bin/pnpm
-
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Lifecycle scripts stay disabled, so pnpm's bins remain shebang-less shell stubs that
+# QEMU cannot execute (arm64 build). pnpm's own install.js swaps in the native binary.
+RUN npm install --global --ignore-scripts "pnpm@$(node -p "require('./package.json').packageManager.split('+')[0].split('@')[1]")" \
+    && node "$(npm root --global)/pnpm/install.js"
+
 RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.json ./
 COPY src ./src
-RUN pnpm run build
+RUN pnpm run build && pnpm prune --prod
 
 FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/node:26-slim
 

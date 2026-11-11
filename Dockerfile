@@ -2,7 +2,10 @@ FROM node:26-alpine AS build
 
 WORKDIR /app
 
-RUN npm install --global --ignore-scripts pnpm@12.18.0
+# Without lifecycle scripts the pnpm bin is a shebang-less stub that fails under QEMU (arm64 build)
+RUN npm install --global --ignore-scripts pnpm@12.18.0 \
+    && chmod +x /usr/local/lib/node_modules/pnpm/bin/pnpm.mjs \
+    && ln -sf /usr/local/lib/node_modules/pnpm/bin/pnpm.mjs /usr/local/bin/pnpm
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile

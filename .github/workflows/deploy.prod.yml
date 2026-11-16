@@ -9,6 +9,16 @@ jobs:
     permissions: { contents: read, id-token: write }
     secrets: inherit
 
+  # Its own job, so a failing alerts deploy doesn't hold back the release. After the app, so the alerts don't go live
+  # before the metrics they read. Prod only: the dev apps have no alerts
+  alerts:
+    needs: deploy
+    uses: navikt/navno-ci/.github/workflows/nais-deploy.yml@v1
+    permissions: { contents: read, id-token: write }
+    with:
+      cluster: prod-gcp
+      resource: .nais/alerts.yml
+
   release:
     needs: deploy
     uses: navikt/navno-ci/.github/workflows/release.yml@v1

@@ -1,5 +1,12 @@
+import { Gauge } from '@prometheus-io/client';
 import { currentCacheKey } from './req-handlers/cache-key';
 import { logger } from './logger';
+import {
+    type FrontendPath,
+    metricsPrefix,
+    observeFrontendRequest,
+    registry,
+} from './metrics';
 
 const clientPort = 3000;
 const clientStaleTime = 10000;
@@ -15,6 +22,19 @@ type FetchOptions = Omit<RequestInit, 'headers'> & {
 
 const clientData: Record<string, ClientData> = {};
 
+const isActive = ({ lastHeartbeat }: ClientData): boolean =>
+    Date.now() - lastHeartbeat < clientStaleTime;
+
+// Counted when scraped, as stale clients are only removed from clientData on the next invalidation
+new Gauge({
+    name: `${metricsPrefix}frontend_clients`,
+    help: 'Frontend pods with a heartbeat in the last 10 seconds, which invalidations are passed on to',
+    registers: [registry],
+    collect() {
+        this.set(Object.values(clientData).filter(isActive).length);
+    },
+});
+
 const updateClient = (address: string, redisPrefixes?: string): void => {
     if (!clientData[address]) {
         logger.info({ message: `New client: ${address}` });
@@ -27,25 +47,25 @@ const updateClient = (address: string, redisPrefixes?: string): void => {
 };
 
 const callClients = (
-    path: string,
+    path: FrontendPath,
     eventid?: string,
     options: FetchOptions = {}
 ): void => {
     Object.entries(clientData).forEach(([address, data]) => {
-        const { lastHeartbeat } = data;
-
-        if (Date.now() - lastHeartbeat < clientStaleTime) {
+        if (isActive(data)) {
             const url = `http://${address}:${clientPort}${path}`;
-            fetch(url, {
-                ...options,
-                headers: {
-                    ...options.headers,
-                    eventid: eventid ?? '',
-                    secret: process.env.SERVICE_SECRET ?? '',
-                    cache_key: currentCacheKey.key,
-                    cache_ts: String(currentCacheKey.timestamp),
-                },
-            })
+            observeFrontendRequest(path, () =>
+                fetch(url, {
+                    ...options,
+                    headers: {
+                        ...options.headers,
+                        eventid: eventid ?? '',
+                        secret: process.env.SERVICE_SECRET ?? '',
+                        cache_key: currentCacheKey.key,
+                        cache_ts: String(currentCacheKey.timestamp),
+                    },
+                })
+            )
                 .then((res) => {
                     if (!res.ok) {
                         throw new Error(`${res.status} - ${res.statusText}`);

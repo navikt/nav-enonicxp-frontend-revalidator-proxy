@@ -1,0 +1,83 @@
+# What these watch: published content in XP reaching nav.no. XP calls the proxy, which deletes the pages from Valkey and
+# passes the invalidation on to every frontend pod that has registered with a heartbeat.
+# There is no alert on missing invalidations: publishing comes in bursts, with weekday gaps of 3-4 hours, so the
+# heartbeats (every 5 seconds from every frontend pod) are the health signal instead.
+# Prod only, deployed by deploy.prod.yml. No double curly braces in this file, not even in comments: nais deploy templates every resource with Handlebars.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: nav-enonicxp-frontend-revalidator-proxy-alerts
+  namespace: navno
+  labels:
+    team: navno
+spec:
+  groups:
+    - name: nav-enonicxp-frontend-revalidator-proxy
+      rules:
+        # "or vector(0)" covers the series not existing at all, so this also fires when the proxy is down or not scraped
+        - alert: RevalidatorProxyNoFrontendClients
+          expr: (max(revalidator_proxy_frontend_clients) or vector(0)) == 0
+          for: 5m
+          annotations:
+            summary: No frontend pods are registered with nav-enonicxp-frontend-revalidator-proxy
+            consequence: Published content doesn't reach nav.no. Invalidations from XP go to no frontend pod, and soon stop deleting pages from Valkey too, since the key prefixes come from the heartbeats.
+            action: Check that the proxy pod is running and being scraped. Then look at revalidator_proxy_heartbeats_total. If they are unauthorized, SERVICE_SECRET differs between nav-enonicxp-frontend and the proxy. If there are none, look for "Heartbeat failed" in nav-enonicxp-frontend's logs and check both apps' access policies.
+          labels:
+            namespace: navno
+            severity: critical
+
+        # Valkey commands wait while the client reconnects, and the frontend pods are only called after the delete,
+        # so XP's requests hang until they time out (outcome="aborted" in revalidator_proxy_invalidation_requests_total)
+        - alert: RevalidatorProxyValkeyDown
+          expr: max(revalidator_proxy_valkey_ready) == 0
+          for: 5m
+          annotations:
+            summary: nav-enonicxp-frontend-revalidator-proxy has lost its connection to Valkey
+            consequence: Published content doesn't reach nav.no. Invalidations wait for Valkey before they are passed on to the frontend pods.
+            action: Look for "Valkey client error" and "reconnecting" in the proxy's logs, and check the pagecache Valkey instance in the Nais console. Restarting the pod gives it a new connection.
+          labels:
+            namespace: navno
+            severity: critical
+
+        # Any failure counts: the logs had none in the 30 days before this alert was added
+        - alert: RevalidatorProxyValkeyCommandsFailing
+          expr: sum(increase(revalidator_proxy_valkey_commands_total{outcome="error"}[30m])) > 0
+          annotations:
+            summary: Valkey commands fail in nav-enonicxp-frontend-revalidator-proxy
+            consequence: Published pages may stay stale in the shared Valkey cache. The frontend pods still get the invalidation.
+            action: Split revalidator_proxy_valkey_commands_total by command, and look for "Error deleting values from Valkey" or "Error flushing database" in the proxy's logs. Check the pagecache Valkey instance in the Nais console.
+          labels:
+            namespace: navno
+            severity: warning
+
+        # unauthorized, invalid and error are requests the proxy refused or failed, aborted that XP gave up waiting.
+        # At least 3 in an hour, so that a single blip doesn't fire it (> 2.5, as increase() extrapolates 2 to a little
+        # over 2). XP sends dozens of invalidations on a working day, so a broken secret or contract still shows up
+        # within a few hours.
+        - alert: RevalidatorProxyInvalidationsFailing
+          expr: sum(increase(revalidator_proxy_invalidation_requests_total{outcome=~"unauthorized|invalid|error|aborted"}[1h])) > 2.5
+          annotations:
+            summary: Invalidation requests from XP to nav-enonicxp-frontend-revalidator-proxy fail
+            consequence: Some published content doesn't reach nav.no.
+            action: Split revalidator_proxy_invalidation_requests_total by outcome. unauthorized means SERVICE_SECRET differs between nav-enonicxp and the proxy. invalid means XP sends a body the proxy doesn't accept. aborted usually means Valkey is slow or down, error is in the proxy's logs.
+          labels:
+            namespace: navno
+            severity: warning
+
+        # Frontend pods that are shutting down fail a call now and then: 5 failed calls in the 30 days before this
+        # alert was added, at most 3 in one hour. So this wants at least 6 in 30 minutes (> 5.5, see above), and over
+        # 20% of them.
+        - alert: RevalidatorProxyFrontendCallsFailing
+          expr: |
+            sum(increase(revalidator_proxy_frontend_requests_total{status!="2xx"}[30m])) > 5.5
+            and
+            sum(increase(revalidator_proxy_frontend_requests_total{status!="2xx"}[30m]))
+              / sum(increase(revalidator_proxy_frontend_requests_total[30m])) > 0.2
+          for: 5m
+          annotations:
+            summary: Invalidations passed on from nav-enonicxp-frontend-revalidator-proxy to the frontend pods fail
+            consequence: Frontend pods keep serving stale pages from their local cache after content is published.
+            action: Split revalidator_proxy_frontend_requests_total by status. 4xx is most likely SERVICE_SECRET differing between the proxy and nav-enonicxp-frontend. network_error means the pods can't be reached, so check their health and the proxy's outbound access policy. The proxy logs each failure as "Request to ... failed".
+          labels:
+            namespace: navno
+            severity: warning

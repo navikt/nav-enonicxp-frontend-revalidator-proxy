@@ -1,6 +1,8 @@
+import { Gauge } from '@prometheus-io/client';
 import { createClient } from 'redis';
 import { getUniqueRedisPrefixes } from './clients';
 import { logger } from './logger';
+import { metricsPrefix, observeValkeyCommand, registry } from './metrics';
 
 const clientOptions = {
     url: process.env.REDIS_URI_PAGECACHE,
@@ -43,6 +45,10 @@ class RedisCache {
         });
     }
 
+    get isReady(): boolean {
+        return this.client.isReady;
+    }
+
     async init(): Promise<void> {
         return this.client.connect().then(() => {
             logger.info('Initialized Valkey client');
@@ -64,7 +70,9 @@ class RedisCache {
 
         logger.info({ message: `Deleting values for keys ${keysToDeleteStr}` });
 
-        return this.client.del(keysToDelete).catch((e) => {
+        return observeValkeyCommand('del', () =>
+            this.client.del(keysToDelete)
+        ).catch((e) => {
             logger.error({
                 message: `Error deleting values from Valkey for keys ${keysToDeleteStr} - ${e}`,
             });
@@ -75,7 +83,9 @@ class RedisCache {
     async clear(): Promise<string> {
         logger.info({ message: 'Clearing Valkey cache!' });
 
-        return this.client.flushDb().catch((e) => {
+        return observeValkeyCommand('flushdb', () =>
+            this.client.flushDb()
+        ).catch((e) => {
             logger.error({ message: `Error flushing database - ${e}` });
             return 'error';
         });
@@ -102,5 +112,17 @@ class RedisCacheDummy {
 
 const redisCache: RedisCache | RedisCacheDummy =
     process.env.NO_VALKEY === 'true' ? new RedisCacheDummy() : new RedisCache();
+
+if (redisCache instanceof RedisCache) {
+    const cache = redisCache;
+    new Gauge({
+        name: `${metricsPrefix}valkey_ready`,
+        help: '1 when the Valkey client is connected and ready, 0 otherwise. Commands sent while it is not ready wait until it reconnects',
+        registers: [registry],
+        collect() {
+            this.set(cache.isReady ? 1 : 0);
+        },
+    });
+}
 
 export { redisCache, validateRedisClientOptions };

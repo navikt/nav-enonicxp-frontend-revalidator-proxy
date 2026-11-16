@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { callClients } from '../clients';
 import { redisCache } from '../redis';
 import { logger } from '../logger';
+import { markDuplicate } from '../metrics';
 
 type InvalidatePathsBody = {
     paths?: unknown;
@@ -39,7 +40,7 @@ const invalidatePathsHandler = async (
         ? req.headers.eventid[0]
         : req.headers.eventid;
     const safeEventid = eventid ?? '';
-    const { paths } = req.body;
+    const { paths } = req.body ?? {};
 
     if (!Array.isArray(paths)) {
         logger.error({ message: `Bad request for event ${safeEventid}` });
@@ -55,6 +56,7 @@ const invalidatePathsHandler = async (
     if (eventWasProcessed) {
         const msg = `Event ${safeEventid} has already been processed`;
         logger.info({ message: msg });
+        markDuplicate(res);
         res.status(200).send(msg);
         return;
     }

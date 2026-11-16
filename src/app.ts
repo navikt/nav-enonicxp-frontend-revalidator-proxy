@@ -9,14 +9,17 @@ import { invalidateAllHandler } from './req-handlers/invalidate-all';
 import { invalidatePathsHandler } from './req-handlers/invalidate-paths';
 import { redisCache, validateRedisClientOptions } from './redis';
 import { logger } from './logger';
+import { countHeartbeat, countInvalidation, metricsHandler } from './metrics';
 
-const appPort = 3002;
+// APP_PORT lets the tests run the app next to one on the default port
+const appPort = Number(process.env.APP_PORT) || 3002;
 const app = express();
 
 const jsonBodyParser = express.json();
 
 app.post(
     '/revalidator-proxy',
+    countInvalidation('paths'),
     authMiddleware,
     jsonBodyParser,
     updateCacheKeyMiddleware,
@@ -25,12 +28,13 @@ app.post(
 
 app.get(
     '/revalidator-proxy/wipe-all',
+    countInvalidation('wipe_all'),
     authMiddleware,
     updateCacheKeyMiddleware,
     invalidateAllHandler
 );
 
-app.get('/liveness', authMiddleware, heartbeatHandler);
+app.get('/liveness', countHeartbeat, authMiddleware, heartbeatHandler);
 
 app.get('/get-cache-key', getCacheKeyHandler);
 
@@ -41,6 +45,7 @@ app.get('/internal/isAlive', (_req: Request, res: Response) => {
 app.get('/internal/isReady', (_req: Request, res: Response) => {
     return res.status(200).send("I'm ready!");
 });
+app.get('/internal/metrics', metricsHandler);
 
 const server = app.listen(appPort, async () => {
     try {
